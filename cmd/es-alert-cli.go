@@ -8,13 +8,18 @@ import (
 )
 
 type cli struct {
-	command *cobra.Command
-	env     string
-	debug   bool
+	command     *cobra.Command
+	helpCommand *cobra.Command
+	env         string
+	debug       bool
 }
 
 var cliCmd = &cli{
 	command: &cobra.Command{
+		Use:   "cli",
+		Short: "CLI App",
+	},
+	helpCommand: &cobra.Command{
 		Use:   "cli",
 		Short: "CLI App",
 	},
@@ -23,6 +28,7 @@ var cliCmd = &cli{
 }
 
 func init() {
+	rootCmd.AddCommand(cliCmd.command)
 	rootCmd.AddCommand(cliCmd.command)
 
 	cliCmd.command.Flags().StringVarP(&cliCmd.env, "env", "e", "dev", "select your env.")
