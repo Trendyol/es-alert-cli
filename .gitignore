@@ -18,8 +18,7 @@
 # vendor/
 
 #idea folders
-**/.idea/workspace.xml
-**/.idea/tasks.xml
+**/.idea/
 
 # Go workspace file
 go.work

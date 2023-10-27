@@ -7,7 +7,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "alert-cli",
+	Use:   "es-alert-cli",
 	Short: "ES Alert CLI",
 }
 

@@ -13,7 +13,7 @@ type cli struct {
 	debug   bool
 }
 
-var apiCmd = &cli{
+var cliCmd = &cli{
 	command: &cobra.Command{
 		Use:   "cli",
 		Short: "CLI App",
@@ -23,12 +23,12 @@ var apiCmd = &cli{
 }
 
 func init() {
-	rootCmd.AddCommand(apiCmd.command)
+	rootCmd.AddCommand(cliCmd.command)
 
-	apiCmd.command.Flags().StringVarP(&apiCmd.env, "env", "e", "dev", "select your env.")
-	apiCmd.command.Flags().BoolVarP(&apiCmd.debug, "debug", "d", false, "enable debugging")
+	cliCmd.command.Flags().StringVarP(&cliCmd.env, "env", "e", "dev", "select your env.")
+	cliCmd.command.Flags().BoolVarP(&cliCmd.debug, "debug", "d", false, "enable debugging")
 
-	apiCmd.command.RunE = func(cmd *cobra.Command, args []string) error {
+	cliCmd.command.RunE = func(cmd *cobra.Command, args []string) error {
 		go func() {
 			log.Printf("Cli app running in this scope...")
 		}()
