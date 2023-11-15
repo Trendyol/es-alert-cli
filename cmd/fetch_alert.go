@@ -15,7 +15,7 @@ var fetch = &cobra.Command{
 
 func fetchAlerts(cmd *cobra.Command, args []string) {
 	// TODO make sure args are validated & mapped appropriately
-	esAPIClient, err := client.NewElasticsearchAPI(args)
+	esAPIClient, err := client.NewElasticsearchAPI(args[0])
 	if err != nil {
 		fmt.Println("we have an error", err)
 		return

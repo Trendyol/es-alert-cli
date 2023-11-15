@@ -1,35 +1,43 @@
 package client
 
 import (
-	"github.com/elastic/go-elasticsearch/v7"
+	"errors"
+	"fmt"
+	"github.com/Trendyol/es-alert-cli/pkg/model"
 )
 
 type ElasticsearchAPIClient struct {
-	client *elasticsearch.Client
+	client *BaseClient
 }
 
-func NewElasticsearchAPI(client []string) (*ElasticsearchAPIClient, error) {
-	elasticClient, err := NewElasticClient(client)
-	if err != nil {
-		return nil, err
-	}
-	return &ElasticsearchAPIClient{client: elasticClient}, nil
+func NewElasticsearchAPI(client string) (*ElasticsearchAPIClient, error) {
+	return &ElasticsearchAPIClient{client: NewBaseClient(client)}, nil
 }
 
-func (es ElasticsearchAPIClient) FetchMonitors() (map[string]any, error) {
+type ElasticsearchQuery map[string]interface{}
+
+func (es ElasticsearchAPIClient) FetchMonitors() (*model.MonitorResponse, error) {
 
 	// Since this is very simple call to match all maximum monitors which is 1000 for now
-	query := []byte(`{"size": 1000, "query":{ "match_all": {}}}`)
-	_ = query
-	//TODO fill in the blanks
-	/* resp, err := es.client.Search(http.MethodPost,
-		"/_opendistro/_alerting/monitors/_search",
-		query,
-		getCommonHeaders(esClient))
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Error retriving all the monitors")
+	alertQuery := ElasticsearchQuery{
+		"size": 1000,
+		"query": ElasticsearchQuery{
+			"match_all": ElasticsearchQuery{},
+		},
 	}
-	*/
-	testData := map[string]any{"alerts": "will", "be": "here"}
-	return testData, nil
+
+	var monitorResponse model.MonitorResponse
+
+	// Send the request to the Elasticsearch cluster
+	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", alertQuery)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+	}
+
+	err = es.client.Bind(res.Body(), &monitorResponse)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+	}
+
+	return &monitorResponse, nil
 }
