@@ -16,7 +16,7 @@ func NewElasticsearchAPI(client string) (*ElasticsearchAPIClient, error) {
 
 type ElasticsearchQuery map[string]interface{}
 
-func (es ElasticsearchAPIClient) FetchMonitors() (*model.MonitorResponse, error) {
+func (es ElasticsearchAPIClient) FetchMonitors() ([]model.Monitor, error) {
 
 	// Since this is very simple call to match all maximum monitors which is 1000 for now
 	alertQuery := ElasticsearchQuery{
@@ -39,5 +39,10 @@ func (es ElasticsearchAPIClient) FetchMonitors() (*model.MonitorResponse, error)
 		return nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
 	}
 
-	return &monitorResponse, nil
+	var monitors []model.Monitor
+	for _, hit := range monitorResponse.Hits.Hits {
+		monitors = append(monitors, hit.Source.Monitor)
+	}
+
+	return monitors, nil
 }

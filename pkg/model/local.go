@@ -18,11 +18,11 @@ type Period struct {
 	Unit     string `yaml:"unit" json:"unit"`
 }
 
-type InputConfig struct {
-	Search SearchConfig `yaml:"search"`
+type Input struct {
+	Search Search `yaml:"search" json:"search"`
 }
 
-type SearchConfig struct {
+type Search struct {
 	Indices []string    `yaml:"indices"`
 	Query   QueryConfig `yaml:"query"`
 }
@@ -66,11 +66,11 @@ type RangeConfig struct {
 	To           string `yaml:"to"`
 }
 
-type TriggerConfig struct {
-	Name      string         `yaml:"name"`
-	Severity  string         `yaml:"severity"`
-	Condition string         `yaml:"condition"`
-	Actions   []ActionConfig `yaml:"actions"`
+type Trigger struct {
+	Name      string         `yaml:"name" json:"name"`
+	Severity  string         `yaml:"severity" json:"severity"`
+	Condition string         `yaml:"condition" json:"condition"`
+	Actions   []ActionConfig `yaml:"actions" json:"actions"`
 }
 
 type ActionConfig struct {

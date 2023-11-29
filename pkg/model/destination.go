@@ -85,40 +85,53 @@ type MonitorResponse struct {
 						Username interface{} `json:"username"`
 					} `json:"custom_webhook,omitempty"`
 				} `json:"destination,omitempty"`
-				Monitor struct {
-					SchemaVersion  int    `json:"schema_version"`
-					EnabledTime    *int64 `json:"enabled_time"`
-					LastUpdateTime int64  `json:"last_update_time"`
-					Name           string `json:"name"`
-					Type           string `json:"type"`
-					Triggers       []struct {
-						Severity  string `json:"severity"`
-						Condition struct {
-							Script struct {
-								Source string `json:"source"`
-								Lang   string `json:"lang"`
-							} `json:"script"`
-						} `json:"condition"`
-						Name    string `json:"name"`
-						Id      string `json:"id"`
-						Actions []struct {
-							MessageTemplate struct {
-								Source string `json:"source"`
-								Lang   string `json:"lang"`
-							} `json:"message_template"`
-							ThrottleEnabled bool   `json:"throttle_enabled"`
-							DestinationId   string `json:"destination_id"`
-							Name            string `json:"name"`
-							SubjectTemplate struct {
-								Source string `json:"source"`
-								Lang   string `json:"lang"`
-							} `json:"subject_template"`
-							Id string `json:"id"`
-						} `json:"actions"`
-					} `json:"triggers"`
-					Enabled bool `json:"enabled"`
-				} `json:"monitor,omitempty"`
+				Monitor Monitor `json:"monitor,omitempty"`
 			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
 }
+
+//
+//type Monitor struct {
+//	SchemaVersion  int       `json:"schema_version"`
+//	EnabledTime    *int64    `json:"enabled_time"`
+//	LastUpdateTime int64     `json:"last_update_time"`
+//	Name           string    `json:"name"`
+//	Type           string    `json:"type"`
+//	Inputs         []Input   `json:"inputs"`
+//	Enabled        bool      `json:"enabled"`
+//	Triggers       []Trigger `json:"triggers"`
+//}
+//
+//type Trigger struct {
+//	Severity  string `json:"severity"`
+//	Condition struct {
+//		Script struct {
+//			Source string `json:"source"`
+//			Lang   string `json:"lang"`
+//		} `json:"script"`
+//	} `json:"condition"`
+//	Name    string `json:"name"`
+//	Id      string `json:"id"`
+//	Actions []struct {
+//		MessageTemplate struct {
+//			Source string `json:"source"`
+//			Lang   string `json:"lang"`
+//		} `json:"message_template"`
+//		ThrottleEnabled bool   `json:"throttle_enabled"`
+//		DestinationId   string `json:"destination_id"`
+//		Name            string `json:"name"`
+//		SubjectTemplate struct {
+//			Source string `json:"source"`
+//			Lang   string `json:"lang"`
+//		} `json:"subject_template"`
+//		Id string `json:"id"`
+//	} `json:"actions"`
+//}
+//
+//type Input struct {
+//	Search struct {
+//		Indices []string               `json:"indices"`
+//		Query   map[string]interface{} `json:"query"`
+//	} `json:"search"`
+//}
