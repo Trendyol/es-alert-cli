@@ -25,12 +25,12 @@ func TestReadLocalYaml(t *testing.T) {
 	}
 
 	// Define the expected result based on the content of the temporary YAML file
-	expectedConfig := []model.MonitorConfig{
+	expectedConfig := []model.Monitor{
 		{
 			Name:    "Monitor1",
 			Enabled: true,
-			Schedule: model.ScheduleConfig{
-				Period: model.PeriodConfig{
+			Schedule: model.Schedule{
+				Period: model.Period{
 					Interval: 5,
 					Unit:     "MINUTES",
 				},
@@ -40,8 +40,8 @@ func TestReadLocalYaml(t *testing.T) {
 		{
 			Name:    "Monitor2",
 			Enabled: false,
-			Schedule: model.ScheduleConfig{
-				Period: model.PeriodConfig{
+			Schedule: model.Schedule{
+				Period: model.Period{
 					Interval: 10,
 					Unit:     "MINUTES",
 				},

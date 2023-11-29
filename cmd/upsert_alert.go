@@ -25,6 +25,8 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	monitors, err := esAPIClient.FetchMonitors()
 	localMonitors, err := fileReader.ReadLocalYaml("test_monitoring.yaml")
 
+	// todo: compare local with remote and push updated monitors
+
 	fmt.Println(localMonitors)
 
 	//TODO compare(localMonitors, monitors)

@@ -14,7 +14,7 @@ func NewFileReader() (*FileReader, error) {
 	return &FileReader{}, nil
 }
 
-func (f *FileReader) ReadLocalYaml(filename string) ([]model.MonitorConfig, error) {
+func (f *FileReader) ReadLocalYaml(filename string) ([]model.Monitor, error) {
 	// Read YAML file
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -23,7 +23,7 @@ func (f *FileReader) ReadLocalYaml(filename string) ([]model.MonitorConfig, erro
 	}
 
 	// Unmarshal YAML into struct
-	var config []model.MonitorConfig
+	var config []model.Monitor
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		fmt.Println("Error unmarshalling YAML:", err)

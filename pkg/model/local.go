@@ -1,21 +1,21 @@
 package model
 
-type MonitorConfig struct {
-	Name     string          `yaml:"name"`
-	Enabled  bool            `yaml:"enabled"`
-	Schedule ScheduleConfig  `yaml:"schedule"`
-	Inputs   []InputConfig   `yaml:"inputs"`
-	Triggers []TriggerConfig `yaml:"triggers"`
+type Monitor struct {
+	Name     string    `yaml:"name" json:"name"`
+	Enabled  bool      `yaml:"enabled" json:"enabled"`
+	Schedule Schedule  `yaml:"schedule" json:"schedule"`
+	Inputs   []Input   `yaml:"inputs" json:"inputs"`
+	Triggers []Trigger `yaml:"triggers" json:"triggers"`
 }
 
-type ScheduleConfig struct {
-	Period PeriodConfig `yaml:"period"`
-	Cron   interface{}  `yaml:"cron"`
+type Schedule struct {
+	Period Period      `yaml:"period" json:"period"`
+	Cron   interface{} `yaml:"cron" json:"cron"`
 }
 
-type PeriodConfig struct {
-	Interval int    `yaml:"interval"`
-	Unit     string `yaml:"unit"`
+type Period struct {
+	Interval int    `yaml:"interval" json:"interval"`
+	Unit     string `yaml:"unit" json:"unit"`
 }
 
 type InputConfig struct {
