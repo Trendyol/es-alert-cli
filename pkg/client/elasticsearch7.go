@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Trendyol/es-alert-cli/pkg/model"
+	mapset "github.com/deckarep/golang-set"
 )
 
 type ElasticsearchAPIClient struct {
@@ -16,7 +17,7 @@ func NewElasticsearchAPI(client string) (*ElasticsearchAPIClient, error) {
 
 type ElasticsearchQuery map[string]interface{}
 
-func (es ElasticsearchAPIClient) FetchMonitors() ([]model.Monitor, error) {
+func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, mapset.Set, error) {
 
 	// Since this is very simple call to match all maximum monitors which is 1000 for now
 	alertQuery := ElasticsearchQuery{
@@ -31,18 +32,20 @@ func (es ElasticsearchAPIClient) FetchMonitors() ([]model.Monitor, error) {
 	// Send the request to the Elasticsearch cluster
 	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", alertQuery)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
 	}
 
 	err = es.client.Bind(res.Body(), &monitorResponse)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
 	}
 
-	var monitors []model.Monitor
+	var monitors map[string]model.Monitor
+	remoteMonitorsSet := mapset.NewSet()
 	for _, hit := range monitorResponse.Hits.Hits {
-		monitors = append(monitors, hit.Source.Monitor)
+		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor
+		remoteMonitorsSet.Add(hit.Source.Monitor.Name)
 	}
 
-	return monitors, nil
+	return monitors, remoteMonitorsSet, nil
 }
