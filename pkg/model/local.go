@@ -69,7 +69,7 @@ type RangeConfig struct {
 type Trigger struct {
 	Name      string         `yaml:"name" json:"name"`
 	Severity  string         `yaml:"severity" json:"severity"`
-	Condition string         `yaml:"condition" json:"condition"`
+	Condition Condition      `yaml:"condition" json:"condition"`
 	Actions   []ActionConfig `yaml:"actions" json:"actions"`
 }
 
@@ -78,4 +78,11 @@ type ActionConfig struct {
 	DestinationId string `yaml:"destinationId"`
 	Subject       string `yaml:"subject"`
 	Message       string `yaml:"message"`
+}
+
+type Condition struct {
+	Script struct {
+		Source string `json:"source"`
+		Lang   string `json:"lang"`
+	} `json:"script"`
 }

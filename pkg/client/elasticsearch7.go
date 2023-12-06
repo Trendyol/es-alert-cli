@@ -40,7 +40,7 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
 	}
 
-	var monitors map[string]model.Monitor
+	monitors := make(map[string]model.Monitor)
 	remoteMonitorsSet := mapset.NewSet()
 	for _, hit := range monitorResponse.Hits.Hits {
 		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor

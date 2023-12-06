@@ -32,7 +32,7 @@ func (f *FileReader) ReadLocalYaml(filename string) (map[string]model.Monitor, m
 	}
 
 	localMonitorSet := mapset.NewSet()
-	var monitorMap map[string]model.Monitor
+	monitorMap := make(map[string]model.Monitor)
 	for _, monitor := range monitors {
 		localMonitorSet.Add(monitor.Name)
 		monitorMap[monitor.Name] = monitor

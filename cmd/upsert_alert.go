@@ -29,7 +29,12 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	}
 
 	//Get Monitors(Local and Remote)
-	remoteMonitors, remoteMonitorSet, err := esAPIClient.FetchMonitors()                       //TODO: trigger struct is not marshalling. fix it.
+	remoteMonitors, remoteMonitorSet, err := esAPIClient.FetchMonitors()
+	if err != nil {
+		fmt.Println("error while read remote monitors", err)
+		return
+	}
+
 	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(cliCmd.monitoringFilename) //TODO: read yaml name from args like our old one
 	if err != nil {
 		fmt.Println("error while read local file", err)
@@ -58,7 +63,8 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// todo: compare local with remote and push updated monitors
+	//TODO: destination name should be set to destination id.
+	//TODO: compare local with remote and push updated monitors
 
 	fmt.Println(localMonitors)
 
