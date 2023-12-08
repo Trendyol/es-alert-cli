@@ -1,17 +1,5 @@
 package model
 
-type Destination struct {
-	ID            string
-	Name          string        `json:"name"`
-	Type          string        `json:"type"`
-	Slack         Slack         `json:"slack,omitempty" yaml:",omitempty"`
-	CustomWebhook CustomWebhook `json:"custom_webhook,omitempty" yaml:",omitempty"`
-}
-
-type Slack struct {
-	URL string `json:"url,omitempty" yaml:",omitempty"`
-}
-
 type CustomWebhook struct {
 	Path         string            `json:"path,omitempty" yaml:",omitempty"`
 	HeaderParams map[string]string `json:"header_params,omitempty" yaml:",omitempty"`
@@ -25,7 +13,7 @@ type CustomWebhook struct {
 }
 
 // TODO: simplfy model
-type MonitorResponse struct {
+type ElasticFetchResponse struct {
 	Took     int  `json:"took"`
 	TimedOut bool `json:"timed_out"`
 	Shards   struct {
@@ -49,46 +37,23 @@ type MonitorResponse struct {
 			PrimaryTerm int     `json:"_primary_term"`
 			Score       float64 `json:"_score"`
 			Source      struct {
-				Destination struct {
-					SchemaVersion  int   `json:"schema_version"`
-					SeqNo          int   `json:"seq_no"`
-					LastUpdateTime int64 `json:"last_update_time"`
-					Slack          struct {
-						Url string `json:"url"`
-					} `json:"slack,omitempty"`
-					Name string `json:"name"`
-					Id   string `json:"id"`
-					Type string `json:"type"`
-					User struct {
-						BackendRoles         []interface{} `json:"backend_roles"`
-						CustomAttributeNames []interface{} `json:"custom_attribute_names"`
-						Roles                []interface{} `json:"roles"`
-						Name                 string        `json:"name"`
-						UserRequestedTenant  interface{}   `json:"user_requested_tenant"`
-					} `json:"user"`
-					PrimaryTerm   int `json:"primary_term"`
-					CustomWebhook struct {
-						Path         interface{} `json:"path"`
-						HeaderParams struct {
-							Authorization string `json:"Authorization,omitempty"`
-							ContentType   string `json:"Content-Type"`
-						} `json:"header_params"`
-						Password    interface{} `json:"password"`
-						Scheme      string      `json:"scheme"`
-						Method      string      `json:"method"`
-						Port        int         `json:"port"`
-						QueryParams struct {
-							Field1 string `json:""`
-						} `json:"query_params"`
-						Host     interface{} `json:"host"`
-						Url      string      `json:"url"`
-						Username interface{} `json:"username"`
-					} `json:"custom_webhook,omitempty"`
-				} `json:"destination,omitempty"`
-				Monitor Monitor `json:"monitor,omitempty"`
+				Destination Destination `json:"destination,omitempty"`
+				Monitor     Monitor     `json:"monitor,omitempty"`
 			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
+}
+
+type Destination struct {
+	Id            string        `json:"id"`
+	Name          string        `json:"name"`
+	Type          string        `json:"type"`
+	Slack         Slack         `json:"slack,omitempty" yaml:",omitempty"`
+	CustomWebhook CustomWebhook `json:"custom_webhook,omitempty" yaml:",omitempty"`
+}
+
+type Slack struct {
+	URL string `json:"url,omitempty" yaml:",omitempty"`
 }
 
 //

@@ -20,7 +20,6 @@ var fetch = &cobra.Command{
 }
 
 func upsertAlerts(cmd *cobra.Command, args []string) {
-	// TODO make sure args are validated & mapped appropriately
 	esAPIClient, err := client.NewElasticsearchAPI(args[0])
 	fileReader, err := reader.NewFileReader()
 	if err != nil {
@@ -28,13 +27,13 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	//Get Monitors(Local and Remote)
+	//Get Remote Monitors
 	remoteMonitors, remoteMonitorSet, err := esAPIClient.FetchMonitors()
 	if err != nil {
 		fmt.Println("error while read remote monitors", err)
 		return
 	}
-
+	//Get Local Monitors
 	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(cliCmd.monitoringFilename) //TODO: read yaml name from args like our old one
 	if err != nil {
 		fmt.Println("error while read local file", err)
@@ -47,14 +46,12 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 
 	//Find modified monitors
 	modifiedMonitors := mapset.NewSet()
-	intersectedMonitorsIt := intersectedMonitors.Iterator()
-	for intersectedMonitorName := range intersectedMonitorsIt.C {
+	for intersectedMonitorName := range intersectedMonitors.Iterator().C {
 		if isMonitorChanged(localMonitors[intersectedMonitorName.(string)], remoteMonitors[intersectedMonitorName.(string)]) {
 			modifiedMonitors.Add(intersectedMonitorName)
 		}
 	}
 
-	//monitorsToBeUpdated := newMonitors.Union(modifiedMonitors)
 	shouldDelete := cliCmd.deleteUntracked && unTrackedMonitors.Cardinality() > 0
 	shouldUpdate := modifiedMonitors.Cardinality() > 0
 	shouldCreate := newMonitors.Cardinality() > 0
@@ -63,12 +60,26 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	//TODO: destination name should be set to destination id.
-	//TODO: compare local with remote and push updated monitors
+	monitorsToBeUpdated := newMonitors.Union(modifiedMonitors)
 
-	fmt.Println(localMonitors)
+	preparedMonitors := make(map[string]model.Monitor)
+	for monitor := range monitorsToBeUpdated.Iterator().C {
+		monitorName := monitor.(string)
+		preparedMonitors[monitorName] = localMonitors[monitorName]
+	}
 
-	//TODO compare(localMonitors, remoteMonitors)
+	//TODO: push updated monitors
+	if shouldCreate {
+		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
+	}
+
+	if shouldUpdate {
+		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
+	}
+
+	//TODO: continue
+	fmt.Println(monitorsToBeUpdated)
+
 	if err != nil {
 		fmt.Println("Client error", err)
 		return

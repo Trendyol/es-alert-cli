@@ -1,4 +1,5 @@
 - name: 'ProductOfferingPDP Product Detail API Monitor'
+  type: "monitor"
   enabled: true
   schedule:
     period:
@@ -67,10 +68,10 @@
           lang: painless
       actions:
         - name: "ProductOfferingPDP Product Detail API Error Alert"
-          destinationId: inventory-alerts
+          destinationId: reco-alerts
           subject: "ProductOfferingPDP Product Detail API Error Alert"
           message: |-
-            Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the issue. 
+            Monitor {{ctx.monitor.name}} just entered alert status. NEW-COMMENT Please investigate the issue. 
             ❗ *ProductOfferingPDP Product Detail API Error Alert* is triggered by more than 300 errors. <!channel>
             > *Cluster-based Logs:* *<https://kibana-discovery-logging-01.stage.trendyol.com/app/kibana#/discover?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-20m,to:now))&_a=(columns:!(x.message,x.msg),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'a0980db0-49f8-11ed-8c51-6f32aac10425',key:kubernetes.labels.release,negate:!f,params:(query:product-detail-api),type:phrase),query:(match_phrase:(kubernetes.labels.release:product-detail-api))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'a0980db0-49f8-11ed-8c51-6f32aac10425',key:ERROR,negate:!f,params:(query:ERROR),type:phrase),query:(match_phrase:(ERROR:ERROR)))),index:'a0980db0-49f8-11ed-8c51-6f32aac10425',interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))|$DC>*
             > *Sample Message:* {{ctx.results.0.hits.hits.0._source.x.message}}

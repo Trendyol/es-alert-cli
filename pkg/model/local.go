@@ -1,6 +1,7 @@
 package model
 
 type Monitor struct {
+	Type     string    `yaml:"type" json:"type"`
 	Name     string    `yaml:"name" json:"name"`
 	Enabled  bool      `yaml:"enabled" json:"enabled"`
 	Schedule Schedule  `yaml:"schedule" json:"schedule"`
@@ -23,27 +24,27 @@ type Input struct {
 }
 
 type Search struct {
-	Indices []string    `yaml:"indices"`
-	Query   QueryConfig `yaml:"query"`
+	Indices []string   `yaml:"indices"`
+	Query   QueryParam `yaml:"query"`
 }
 
-type QueryConfig struct {
-	Query BoolConfig `yaml:"query"`
+type QueryParam struct {
+	Query BoolParam `yaml:"query"`
 }
 
-type BoolConfig struct {
-	AdjustPureNegative bool         `yaml:"adjust_pure_negative"`
-	Boost              int          `yaml:"boost"`
-	Must               []MustConfig `yaml:"must"`
-	MustNot            []MustConfig `yaml:"must_not"`
+type BoolParam struct {
+	AdjustPureNegative bool        `yaml:"adjust_pure_negative"`
+	Boost              int         `yaml:"boost"`
+	Must               []MustParam `yaml:"must"`
+	MustNot            []MustParam `yaml:"must_not"`
 }
 
-type MustConfig struct {
-	Match MatchConfig `yaml:"match"`
-	Range RangeConfig `yaml:"range"`
+type MustParam struct {
+	Match MatchParam `yaml:"match"`
+	Range RangeParam `yaml:"range"`
 }
 
-type MatchConfig struct {
+type MatchParam struct {
 	Field                string `yaml:"field"`
 	AutoGenerateSynonyms bool   `yaml:"auto_generate_synonyms_phrase_query"`
 	Boost                int    `yaml:"boost"`
@@ -56,7 +57,7 @@ type MatchConfig struct {
 	ZeroTermsQuery       string `yaml:"zero_terms_query"`
 }
 
-type RangeConfig struct {
+type RangeParam struct {
 	Field        string `yaml:"field"`
 	Boost        int    `yaml:"boost"`
 	From         string `yaml:"from"`
@@ -67,17 +68,18 @@ type RangeConfig struct {
 }
 
 type Trigger struct {
-	Name      string         `yaml:"name" json:"name"`
-	Severity  string         `yaml:"severity" json:"severity"`
-	Condition Condition      `yaml:"condition" json:"condition"`
-	Actions   []ActionConfig `yaml:"actions" json:"actions"`
+	Name      string    `yaml:"name" json:"name"`
+	Severity  string    `yaml:"severity" json:"severity"`
+	Condition Condition `yaml:"condition" json:"condition"`
+	Actions   []Action  `yaml:"actions" json:"actions"`
 }
 
-type ActionConfig struct {
-	Name          string `yaml:"name"`
-	DestinationId string `yaml:"destinationId"`
-	Subject       string `yaml:"subject"`
-	Message       string `yaml:"message"`
+type Action struct {
+	Name            string `yaml:"name"`
+	DestinationId   string `yaml:"destinationId"`
+	DestinationName string
+	Subject         string `yaml:"subject"`
+	Message         string `yaml:"message"`
 }
 
 type Condition struct {
