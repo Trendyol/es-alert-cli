@@ -71,7 +71,7 @@ type Slack struct {
 //type Trigger struct {
 //	Severity  string `json:"severity"`
 //	Condition struct {
-//		Script struct {
+//		Template struct {
 //			Source string `json:"source"`
 //			Lang   string `json:"lang"`
 //		} `json:"script"`

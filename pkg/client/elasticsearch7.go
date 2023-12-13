@@ -50,7 +50,8 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 	remoteMonitorsSet := mapset.NewSet()
 	for _, hit := range response.Hits.Hits {
 		for i, trigger := range hit.Source.Monitor.Triggers {
-			hit.Source.Monitor.Triggers[i].Actions[0].DestinationName = destinations[trigger.Actions[0].DestinationId].Name
+			hit.Source.Monitor.Triggers[i].Actions[0].DestinationId = destinations[trigger.Actions[0].DestinationId].Name
+			println(hit.Source.Monitor.Triggers[i].Actions[0].SubjectTemplate.Source)
 		}
 		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor
 		remoteMonitorsSet.Add(hit.Source.Monitor.Name)

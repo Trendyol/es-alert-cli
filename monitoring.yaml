@@ -61,21 +61,31 @@
   ##EXCLUDE##
   triggers:
     - name: "ProductOfferingPDP Product Detail API Error Alert"
-      severity: "3"
+      severity: "1"
       condition:
         script:
           source: ctx.results[0].hits.total.value > 300
           lang: painless
       actions:
         - name: "ProductOfferingPDP Product Detail API Error Alert"
-          destinationId: reco-alerts
-          subject: "ProductOfferingPDP Product Detail API Error Alert"
-          message: |-
-            Monitor {{ctx.monitor.name}} just entered alert status. NEW-COMMENT Please investigate the issue. 
-            ❗ *ProductOfferingPDP Product Detail API Error Alert* is triggered by more than 300 errors. <!channel>
-            > *Cluster-based Logs:* *<https://kibana-discovery-logging-01.stage.trendyol.com/app/kibana#/discover?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-20m,to:now))&_a=(columns:!(x.message,x.msg),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'a0980db0-49f8-11ed-8c51-6f32aac10425',key:kubernetes.labels.release,negate:!f,params:(query:product-detail-api),type:phrase),query:(match_phrase:(kubernetes.labels.release:product-detail-api))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'a0980db0-49f8-11ed-8c51-6f32aac10425',key:ERROR,negate:!f,params:(query:ERROR),type:phrase),query:(match_phrase:(ERROR:ERROR)))),index:'a0980db0-49f8-11ed-8c51-6f32aac10425',interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))|$DC>*
-            > *Sample Message:* {{ctx.results.0.hits.hits.0._source.x.message}}
-            > *Agent Name:* {{ctx.results.0.hits.hits.0._source.x.agent-name}}
-            > *Cluster:* {{ctx.results.0.hits.hits.0._source.x.cluster}}
-            > *Severity:* {{ctx.results.0.hits.hits.0._source.ERROR}}
-            > *Count:* {{ctx.results.0.hits.total.value}}
+          destinationId: product-offering-pdp-oncall
+          subject:
+            source: "ProductOfferingPDP Product Detail API Error Alert"
+            lang: mustache
+          message:
+            source: |-
+              {
+                "title":"{{ctx.monitor.name}} just entered alert status. -New-Comment- Please investigate the issue.",
+                "monitor":{
+                    "name":"{{ctx.monitor.name}}",
+                    "enabled":"{{ctx.monitor.enabled}}"
+                },
+                "trigger":{
+                    "id":"{{ctx.trigger.id}}",
+                    "name":"{{ctx.trigger.name}} \n> *Cluster-based Logs:* *<https://kibana-discovery-logging-01.stage.trendyol.com/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-20m,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:a0980db0-49f8-11ed-8c51-6f32aac10425,key:kubernetes.labels.release.keyword,negate:!f,params:(query:product-detail-api),type:phrase),query:(match_phrase:(kubernetes.labels.release.keyword:product-detail-api))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:a0980db0-49f8-11ed-8c51-6f32aac10425,key:x.level,negate:!f,params:(query:x.level),type:phrase),query:(match_phrase:(x.level:ERROR)))),index:a0980db0-49f8-11ed-8c51-6f32aac10425,interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))|stage >* \n> *Sample Message:* {{ctx.results.0.hits.hits.0._source.x.message}}\n> *Agent Name:* {{ctx.results.0.hits.hits.0._source.x.agent-name}}\n> *Cluster:* {{ctx.results.0.hits.hits.0._source.x_cluster}}\n> *Severity:* {{ctx.results.0.hits.hits.0._source.x.level}}\n> *Count:* {{ctx.results.0.hits.total.value}}",
+                    "severity":"1"
+                },
+                "periodStart":"{{ctx.periodStart}}",
+                "periodEnd":"{{ctx.periodEnd}}"
+              }
+            lang: mustache

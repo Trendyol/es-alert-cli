@@ -78,13 +78,14 @@ type Action struct {
 	Name            string `yaml:"name"`
 	DestinationId   string `yaml:"destinationId"`
 	DestinationName string
-	Subject         string `yaml:"subject"`
-	Message         string `yaml:"message"`
+	SubjectTemplate Script `yaml:"subject" json:"subject_template"`
+	MessageTemplate Script `yaml:"message" json:"message_template"`
+}
+type Condition struct {
+	Script Script `json:"script" yaml:"script"`
 }
 
-type Condition struct {
-	Script struct {
-		Source string `json:"source"`
-		Lang   string `json:"lang"`
-	} `json:"script"`
+type Script struct {
+	Source string `json:"source"`
+	Lang   string `json:"lang"`
 }
