@@ -63,16 +63,19 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	monitorsToBeUpdated := newMonitors.Union(modifiedMonitors)
 
 	preparedMonitors := make(map[string]model.Monitor)
-	for monitor := range monitorsToBeUpdated.Iterator().C {
-		monitorName := monitor.(string)
-		preparedMonitors[monitorName] = localMonitors[monitorName]
+	for m := range monitorsToBeUpdated.Iterator().C {
+		monitorName := m.(string)
+		monitor := localMonitors[monitorName]
+		monitor.Id = remoteMonitors[monitorName].Id
+
+		preparedMonitors[monitorName] = monitor
 	}
 
-	//TODO: push updated monitors
+	//TODO: push created monitors
 	if shouldCreate {
 		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
 	}
-
+	//NOTE: in progress
 	if shouldUpdate {
 		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
 	}

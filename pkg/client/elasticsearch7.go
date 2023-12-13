@@ -51,8 +51,8 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 	for _, hit := range response.Hits.Hits {
 		for i, trigger := range hit.Source.Monitor.Triggers {
 			hit.Source.Monitor.Triggers[i].Actions[0].DestinationId = destinations[trigger.Actions[0].DestinationId].Name
-			println(hit.Source.Monitor.Triggers[i].Actions[0].SubjectTemplate.Source)
 		}
+		hit.Source.Monitor.Id = hit.Id
 		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor
 		remoteMonitorsSet.Add(hit.Source.Monitor.Name)
 	}
@@ -106,17 +106,18 @@ func (es ElasticsearchAPIClient) PushMonitors(monitorsToBeUpdated mapset.Set, pr
 		runMonitor := preparedMonitors[monitorName]
 
 		// Send the request to the Elasticsearch cluster
-		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", runMonitor.Name)
-		res, err := es.client.POST(path, runMonitor)
+		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", runMonitor.Id)
+		res, err := es.client.PUT(path, runMonitor)
 		if err != nil {
 			log.Fatal(errors.New(fmt.Sprintf("Error posting monitor: %s", err)))
 		}
 
+		//TODO: map response.
+		//TODO: validate we can push correctly and applied
 		var monitorResponse model.ElasticFetchResponse
 		err = es.client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
 			log.Fatal(errors.New(fmt.Sprintf("Error getting response: %s", err)))
 		}
-
 	}
 }

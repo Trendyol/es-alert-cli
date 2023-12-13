@@ -1,6 +1,7 @@
 package model
 
 type Monitor struct {
+	Id       string    `yaml:"-" json:"-"`
 	Type     string    `yaml:"type" json:"type"`
 	Name     string    `yaml:"name" json:"name"`
 	Enabled  bool      `yaml:"enabled" json:"enabled"`
