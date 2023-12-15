@@ -67,23 +67,14 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	}
 
 	monitorsToBeUpdated := newMonitors.Union(modifiedMonitors)
+	preparedMonitors := prepareMonitors(monitorsToBeUpdated, localMonitors, remoteMonitors)
 
-	preparedMonitors := make(map[string]model.Monitor)
-	for m := range monitorsToBeUpdated.Iterator().C {
-		monitorName := m.(string)
-		monitor := localMonitors[monitorName]
-		monitor.Id = remoteMonitors[monitorName].Id
-		monitor.Triggers[0].Id = remoteMonitors[monitorName].Triggers[0].Id
-		monitor.Triggers[0].Actions[0].Id = remoteMonitors[monitorName].Triggers[0].Actions[0].Id
-		monitor.Triggers[0].Actions[0].DestinationId = remoteMonitors[monitorName].Triggers[0].Actions[0].DestinationId
-
-		preparedMonitors[monitorName] = monitor
-	}
 	/*
 		//TODO: push created monitors
 		if shouldCreate {
 			esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
 		}*/
+
 	//NOTE: in progress
 	if shouldUpdate {
 		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
@@ -93,6 +84,29 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	fmt.Println(monitorsToBeUpdated)
 	/*
 		fmt.Println(remoteMonitors)*/
+}
+
+func prepareMonitors(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
+	preparedMonitors := make(map[string]model.Monitor)
+
+	for m := range monitorsToBeUpdated.Iterator().C {
+		monitorName := m.(string)
+		monitor := localMonitors[monitorName]
+		monitor.Id = remoteMonitors[monitorName].Id
+
+		for i, trigger := range remoteMonitors[monitorName].Triggers {
+			monitor.Triggers[i].Id = trigger.Id
+
+			for j, action := range trigger.Actions {
+				monitor.Triggers[i].Actions[j].Id = action.Id
+				monitor.Triggers[i].Actions[j].DestinationId = action.DestinationId
+			}
+		}
+
+		preparedMonitors[monitorName] = monitor
+	}
+
+	return preparedMonitors
 }
 
 func init() {

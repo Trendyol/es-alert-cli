@@ -41,6 +41,7 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
 	}
 
+	//TODO: this one is setting wrong values for action destination id and action id so I just commented out them. If it is not needed lets move it completely.
 	//destinations, err := es.FetchDestinations()
 	//if err != nil {
 	//	return nil, nil, errors.New(fmt.Sprintf("Error getting destination response: %s", err))
@@ -49,6 +50,8 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 	monitors := make(map[string]model.Monitor)
 	remoteMonitorsSet := mapset.NewSet()
 	for _, hit := range response.Hits.Hits {
+
+		//TODO: this one is setting wrong values for action destination id and action id so I just commented out them. If it is not needed lets move it completely.
 		//for i, trigger := range hit.Source.Monitor.Triggers {
 		//	hit.Source.Monitor.Triggers[i].Actions[0].DestinationId = destinations[trigger.Actions[0].DestinationId].Name
 		//	hit.Source.Monitor.Triggers[i].Actions[0].Id = hit.Id
