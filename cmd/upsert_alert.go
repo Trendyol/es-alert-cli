@@ -34,7 +34,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	//TODO: diğer takımın değişiklikleri intersected'a gelir.
+	//TODO: diğer takımıdn değişiklikleri intersected'a gelir.
 	//TODO: dosya içeriğini kontrol etmektense son gelenin isminden dümdüz update atabiliriz.
 	//TODO: takımların folder altında monitor'leri bulunacak şekilde yapmamız düzenli yapabilir bunu da
 	//TODO: mesela bi alert'ı mars'a bi alert'ı moon'a farklı threshold'larla nasıl aktaracağız?
@@ -73,6 +73,9 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		monitorName := m.(string)
 		monitor := localMonitors[monitorName]
 		monitor.Id = remoteMonitors[monitorName].Id
+		monitor.Triggers[0].Id = remoteMonitors[monitorName].Triggers[0].Id
+		monitor.Triggers[0].Actions[0].Id = remoteMonitors[monitorName].Triggers[0].Actions[0].Id
+		monitor.Triggers[0].Actions[0].DestinationId = remoteMonitors[monitorName].Triggers[0].Actions[0].DestinationId
 
 		preparedMonitors[monitorName] = monitor
 	}

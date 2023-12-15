@@ -41,19 +41,19 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
 	}
 
-	destinations, err := es.FetchDestinations()
-	if err != nil {
-		return nil, nil, errors.New(fmt.Sprintf("Error getting destination response: %s", err))
-	}
+	//destinations, err := es.FetchDestinations()
+	//if err != nil {
+	//	return nil, nil, errors.New(fmt.Sprintf("Error getting destination response: %s", err))
+	//}
 
 	monitors := make(map[string]model.Monitor)
 	remoteMonitorsSet := mapset.NewSet()
 	for _, hit := range response.Hits.Hits {
-		for i, trigger := range hit.Source.Monitor.Triggers {
-			hit.Source.Monitor.Triggers[i].Actions[0].DestinationId = destinations[trigger.Actions[0].DestinationId].Name
-			hit.Source.Monitor.Triggers[i].Actions[0].Id = hit.Id
-			hit.Source.Monitor.Triggers[i].Actions[0].Id = destinations[trigger.Actions[0].DestinationId].Name
-		}
+		//for i, trigger := range hit.Source.Monitor.Triggers {
+		//	hit.Source.Monitor.Triggers[i].Actions[0].DestinationId = destinations[trigger.Actions[0].DestinationId].Name
+		//	hit.Source.Monitor.Triggers[i].Actions[0].Id = hit.Id
+		//	hit.Source.Monitor.Triggers[i].Actions[0].Id = destinations[trigger.Actions[0].DestinationId].Name
+		//}
 		hit.Source.Monitor.Id = hit.Id
 		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor
 		remoteMonitorsSet.Add(hit.Source.Monitor.Name)

@@ -87,6 +87,7 @@ type RangeParam struct {
 }
 
 type Trigger struct {
+	Id        string    `yaml:"-" json:"id"`
 	Name      string    `yaml:"name" json:"name"`
 	Severity  string    `yaml:"severity" json:"severity"`
 	Condition Condition `yaml:"condition" json:"condition"`
