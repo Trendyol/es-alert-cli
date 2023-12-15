@@ -33,6 +33,12 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error while read remote monitors", err)
 		return
 	}
+
+	//TODO: diğer takımın değişiklikleri intersected'a gelir.
+	//TODO: dosya içeriğini kontrol etmektense son gelenin isminden dümdüz update atabiliriz.
+	//TODO: takımların folder altında monitor'leri bulunacak şekilde yapmamız düzenli yapabilir bunu da
+	//TODO: mesela bi alert'ı mars'a bi alert'ı moon'a farklı threshold'larla nasıl aktaracağız?
+
 	//Get Local Monitors
 	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(cliCmd.monitoringFilename) //TODO: read yaml name from args like our old one
 	if err != nil {
@@ -70,11 +76,11 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 
 		preparedMonitors[monitorName] = monitor
 	}
-
-	//TODO: push created monitors
-	if shouldCreate {
-		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
-	}
+	/*
+		//TODO: push created monitors
+		if shouldCreate {
+			esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
+		}*/
 	//NOTE: in progress
 	if shouldUpdate {
 		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
@@ -82,12 +88,8 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 
 	//TODO: continue
 	fmt.Println(monitorsToBeUpdated)
-
-	if err != nil {
-		fmt.Println("Client error", err)
-		return
-	}
-	fmt.Println(remoteMonitors)
+	/*
+		fmt.Println(remoteMonitors)*/
 }
 
 func init() {

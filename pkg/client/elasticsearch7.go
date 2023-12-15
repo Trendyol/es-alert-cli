@@ -51,6 +51,8 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 	for _, hit := range response.Hits.Hits {
 		for i, trigger := range hit.Source.Monitor.Triggers {
 			hit.Source.Monitor.Triggers[i].Actions[0].DestinationId = destinations[trigger.Actions[0].DestinationId].Name
+			hit.Source.Monitor.Triggers[i].Actions[0].Id = hit.Id
+			hit.Source.Monitor.Triggers[i].Actions[0].Id = destinations[trigger.Actions[0].DestinationId].Name
 		}
 		hit.Source.Monitor.Id = hit.Id
 		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor
@@ -112,9 +114,9 @@ func (es ElasticsearchAPIClient) PushMonitors(monitorsToBeUpdated mapset.Set, pr
 			log.Fatal(errors.New(fmt.Sprintf("Error posting monitor: %s", err)))
 		}
 
-		//TODO: map response.
 		//TODO: validate we can push correctly and applied
-		var monitorResponse model.ElasticFetchResponse
+		//NOTE: now, we can pushing but trigger is not going
+		var monitorResponse model.UpdateMonitorResponse
 		err = es.client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
 			log.Fatal(errors.New(fmt.Sprintf("Error getting response: %s", err)))

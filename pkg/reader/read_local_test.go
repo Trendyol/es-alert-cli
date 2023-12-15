@@ -19,7 +19,7 @@ func TestReadLocalYaml(t *testing.T) {
 	fileReader := &FileReader{}
 
 	// Call the function with the temporary file path
-	config, err := fileReader.ReadLocalYaml(tempFile)
+	config, _, err := fileReader.ReadLocalYaml(tempFile)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

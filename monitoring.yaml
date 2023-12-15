@@ -14,23 +14,12 @@
           query:
             bool:
               adjust_pure_negative: true
-              boost: 1
+              boost: 1.0
               must:
-                - match:
-                    x.level:
-                      auto_generate_synonyms_phrase_query: true
-                      boost: 1
-                      fuzzy_transpositions: true
-                      lenient: false
-                      max_expansions: 50
-                      operator: AND
-                      prefix_length: 0
-                      query: ERROR
-                      zero_terms_query: NONE
                 - match:
                     kubernetes.labels.release:
                       auto_generate_synonyms_phrase_query: true
-                      boost: 1
+                      boost: 1.0
                       fuzzy_transpositions: true
                       lenient: false
                       max_expansions: 50
@@ -38,9 +27,20 @@
                       prefix_length: 0
                       query: "product-detail-api"
                       zero_terms_query: NONE
+                - match:
+                    x.level:
+                      auto_generate_synonyms_phrase_query: true
+                      boost: 1.0
+                      fuzzy_transpositions: true
+                      lenient: false
+                      max_expansions: 50
+                      operator: AND
+                      prefix_length: 0
+                      query: ERROR
+                      zero_terms_query: NONE
                 - range:
                     '@timestamp':
-                      boost: 1
+                      boost: 1.0
                       from: now-5m
                       include_lower: true
                       include_upper: false
@@ -50,7 +50,7 @@
                 - match:
                     x.message:
                       auto_generate_synonyms_phrase_query: true
-                      boost: 1
+                      boost: 1.0
                       fuzzy_transpositions: true
                       lenient: false
                       max_expansions: 50
@@ -75,7 +75,7 @@
           message:
             source: |-
               {
-                "title":"{{ctx.monitor.name}} just entered alert status. -New-Comment- Please investigate the issue.",
+                "title":"{{ctx.monitor.name}} just entered alert status. -New-Comment-Yaml- Please investigate the issue.",
                 "monitor":{
                     "name":"{{ctx.monitor.name}}",
                     "enabled":"{{ctx.monitor.enabled}}"

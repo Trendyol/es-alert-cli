@@ -56,6 +56,14 @@ type Slack struct {
 	URL string `json:"url,omitempty" yaml:",omitempty"`
 }
 
+type UpdateMonitorResponse struct {
+	Id          string  `json:"_id"`
+	Version     int     `json:"_version"`
+	SeqNo       int     `json:"_seq_no"`
+	PrimaryTerm int     `json:"_primary_term"`
+	Monitor     Monitor `json:"monitor"`
+}
+
 //
 //type Monitor struct {
 //	SchemaVersion  int       `json:"schema_version"`
