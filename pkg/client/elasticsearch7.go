@@ -30,7 +30,6 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 
 	var response model.ElasticFetchResponse
 
-	// Send the request to the Elasticsearch cluster
 	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", alertQuery)
 	if err != nil {
 		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
@@ -50,13 +49,6 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 	monitors := make(map[string]model.Monitor)
 	remoteMonitorsSet := mapset.NewSet()
 	for _, hit := range response.Hits.Hits {
-
-		//TODO: this one is setting wrong values for action destination id and action id so I just commented out them. If it is not needed lets move it completely.
-		//for i, trigger := range hit.Source.Monitor.Triggers {
-		//	hit.Source.Monitor.Triggers[i].Actions[0].DestinationId = destinations[trigger.Actions[0].DestinationId].Name
-		//	hit.Source.Monitor.Triggers[i].Actions[0].Id = hit.Id
-		//	hit.Source.Monitor.Triggers[i].Actions[0].Id = destinations[trigger.Actions[0].DestinationId].Name
-		//}
 		hit.Source.Monitor.Id = hit.Id
 		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor
 		remoteMonitorsSet.Add(hit.Source.Monitor.Name)
@@ -97,7 +89,11 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	destinations := make(map[string]model.Destination)
 	for _, hit := range response.Hits.Hits {
 		if hit.Source.Destination.Name != "" {
-			destinations[hit.Source.Destination.Id] = hit.Source.Destination
+			destination := hit.Source.Destination
+			//note: in case of an update, we need to be able to operate with destinationId since only destinationId comes from the remote monitor.
+			destinations[hit.Id] = destination
+			//note: if the destinationId does not come from remote, we should be able to operate with destinationName so that we can operate from destinationName when changing the destination and creating a new monitor occur.
+			destinations[hit.Source.Destination.Name] = destination
 		}
 	}
 
@@ -106,6 +102,7 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 
 func (es ElasticsearchAPIClient) PushMonitors(monitorsToBeUpdated mapset.Set, preparedMonitors map[string]model.Monitor) {
 	for currentMonitor := range monitorsToBeUpdated.Iterator().C {
+		// Select monitor
 		monitorName := currentMonitor.(string)
 		log.Debug("Running monitor: ", monitorName)
 		runMonitor := preparedMonitors[monitorName]
@@ -117,8 +114,7 @@ func (es ElasticsearchAPIClient) PushMonitors(monitorsToBeUpdated mapset.Set, pr
 			log.Fatal(errors.New(fmt.Sprintf("Error posting monitor: %s", err)))
 		}
 
-		//TODO: validate we can push correctly and applied
-		//NOTE: now, we can pushing but trigger is not going
+		// Bind the response
 		var monitorResponse model.UpdateMonitorResponse
 		err = es.client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
