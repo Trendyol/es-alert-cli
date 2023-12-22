@@ -48,34 +48,6 @@ type MustParam struct {
 	Range map[string]any `yaml:"range" json:"range,omitempty"`
 }
 
-/*
-type MatchParam struct {
-	Field                string `yaml:"field" json:"field"`
-	AutoGenerateSynonyms bool   `yaml:"auto_generate_synonyms_phrase_query" json:"auto_generate_synonyms"`
-	Boost                int    `yaml:"boost" json:"boost"`
-	FuzzyTranspositions  bool   `yaml:"fuzzy_transpositions" json:"fuzzy_transpositions"`
-	Lenient              bool   `yaml:"lenient" json:"lenient"`
-	MaxExpansions        int    `yaml:"max_expansions" json:"max_expansions"`
-	Operator             string `yaml:"operator" json:"operator"`
-	PrefixLength         int    `yaml:"prefix_length" json:"prefix_length"`
-	Query                string `yaml:"query" json:"query"`
-	ZeroTermsQuery       string `yaml:"zero_terms_query" json:"zero_terms_query"`
-}*/
-
-/*
-type MatchParam struct {
-	Field                string `yaml:"field" json:"field"`
-	AutoGenerateSynonyms bool   `yaml:"auto_generate_synonyms_phrase_query" json:"auto_generate_synonyms"`
-	Boost                int    `yaml:"boost" json:"boost"`
-	FuzzyTranspositions  bool   `yaml:"fuzzy_transpositions" json:"fuzzy_transpositions"`
-	Lenient              bool   `yaml:"lenient" json:"lenient"`
-	MaxExpansions        int    `yaml:"max_expansions" json:"max_expansions"`
-	Operator             string `yaml:"operator" json:"operator"`
-	PrefixLength         int    `yaml:"prefix_length" json:"prefix_length"`
-	Query                string `yaml:"query" json:"query"`
-	ZeroTermsQuery       string `yaml:"zero_terms_query" json:"zero_terms_query"`
-}*/
-
 type RangeParam struct {
 	Field        string `yaml:"field" json:"field"`
 	Boost        int    `yaml:"boost" json:"boost"`
@@ -87,6 +59,7 @@ type RangeParam struct {
 }
 
 type Trigger struct {
+	Id        string    `yaml:"-" json:"id"`
 	Name      string    `yaml:"name" json:"name"`
 	Severity  string    `yaml:"severity" json:"severity"`
 	Condition Condition `yaml:"condition" json:"condition"`
@@ -95,9 +68,8 @@ type Trigger struct {
 
 type Action struct {
 	Name            string `yaml:"name" json:"name"`
-	DestinationId   string `yaml:"destinationId" json:"destination_id"`
-	Id              string `yaml:"-" json:"id"`
 	DestinationName string `json:"destination_name,omitempty"`
+	DestinationId   string `yaml:"destinationId" json:"destination_id"`
 	SubjectTemplate Script `yaml:"subject" json:"subject_template"`
 	MessageTemplate Script `yaml:"message" json:"message_template"`
 }

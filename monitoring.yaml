@@ -75,7 +75,7 @@
           message:
             source: |-
               {
-                "title":"{{ctx.monitor.name}} just entered alert status. -New-Comment-Yaml- Please investigate the issue.",
+                "title":"{{ctx.monitor.name}} just entered alert status. -New-Comment-Yaml2- Please investigate the issue.",
                 "monitor":{
                     "name":"{{ctx.monitor.name}}",
                     "enabled":"{{ctx.monitor.enabled}}"

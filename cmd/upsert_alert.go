@@ -33,12 +33,6 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error while read remote monitors", err)
 		return
 	}
-
-	//TODO: diğer takımın değişiklikleri intersected'a gelir.
-	//TODO: dosya içeriğini kontrol etmektense son gelenin isminden dümdüz update atabiliriz.
-	//TODO: takımların folder altında monitor'leri bulunacak şekilde yapmamız düzenli yapabilir bunu da
-	//TODO: mesela bi alert'ı mars'a bi alert'ı moon'a farklı threshold'larla nasıl aktaracağız?
-
 	//Get Local Monitors
 	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(cliCmd.monitoringFilename) //TODO: read yaml name from args like our old one
 	if err != nil {
@@ -67,29 +61,47 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	}
 
 	monitorsToBeUpdated := newMonitors.Union(modifiedMonitors)
+	preparedMonitors := prepareMonitors(monitorsToBeUpdated, localMonitors, remoteMonitors)
 
-	preparedMonitors := make(map[string]model.Monitor)
-	for m := range monitorsToBeUpdated.Iterator().C {
-		monitorName := m.(string)
-		monitor := localMonitors[monitorName]
-		monitor.Id = remoteMonitors[monitorName].Id
-
-		preparedMonitors[monitorName] = monitor
-	}
 	/*
 		//TODO: push created monitors
 		if shouldCreate {
 			esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
 		}*/
+
 	//NOTE: in progress
+	//TODO: when destination name changes, we should get destinationId from fetchDestinations.
 	if shouldUpdate {
 		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
 	}
 
 	//TODO: continue
+	//TODO: when create a monitor, we should get destinationId from fetchDestinations.
 	fmt.Println(monitorsToBeUpdated)
 	/*
 		fmt.Println(remoteMonitors)*/
+}
+
+func prepareMonitors(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
+	preparedMonitors := make(map[string]model.Monitor)
+
+	for m := range monitorsToBeUpdated.Iterator().C {
+		monitorName := m.(string)
+		monitor := localMonitors[monitorName]
+		monitor.Id = remoteMonitors[monitorName].Id
+
+		for i, trigger := range remoteMonitors[monitorName].Triggers {
+			monitor.Triggers[i].Id = trigger.Id
+
+			for j, action := range trigger.Actions {
+				monitor.Triggers[i].Actions[j].DestinationId = action.DestinationId
+			}
+		}
+
+		preparedMonitors[monitorName] = monitor
+	}
+
+	return preparedMonitors
 }
 
 func init() {
@@ -106,3 +118,8 @@ func isMonitorChanged(localMonitor model.Monitor, remoteMonitor model.Monitor) b
 	}
 	return false
 }
+
+//TODO: diğer takımıdn değişiklikleri intersected'a gelir.
+//TODO: dosya içeriğini kontrol etmektense son gelenin isminden dümdüz update atabiliriz.
+//TODO: takımların folder altında monitor'leri bulunacak şekilde yapmamız düzenli yapabilir bunu da
+//TODO: mesela bi alert'ı mars'a bi alert'ı moon'a farklı threshold'larla nasıl aktaracağız?
