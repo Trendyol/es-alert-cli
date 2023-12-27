@@ -27,6 +27,13 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	//Get Destinations
+	destinations, err := esAPIClient.FetchDestinations()
+	if err != nil {
+		fmt.Println("error while read destinations", err)
+		return
+	}
+
 	//Get Remote Monitors
 	remoteMonitors, remoteMonitorSet, err := esAPIClient.FetchMonitors()
 	if err != nil {
@@ -60,29 +67,46 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	monitorsToBeUpdated := newMonitors.Union(modifiedMonitors)
-	preparedMonitors := prepareMonitors(monitorsToBeUpdated, localMonitors, remoteMonitors)
-
-	/*
-		//TODO: push created monitors
-		if shouldCreate {
-			esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
-		}*/
+	if shouldCreate {
+		monitorsToBeUpdated := prepareForCreate(newMonitors, localMonitors, destinations)
+		esAPIClient.CreateMonitors(monitorsToBeUpdated)
+	}
 
 	//NOTE: in progress
 	//TODO: when destination name changes, we should get destinationId from fetchDestinations.
 	if shouldUpdate {
-		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
+		monitorsToBeUpdated := prepareForUpdate(modifiedMonitors, localMonitors, remoteMonitors)
+		esAPIClient.UpdateMonitors(monitorsToBeUpdated)
 	}
 
 	//TODO: continue
 	//TODO: when create a monitor, we should get destinationId from fetchDestinations.
-	fmt.Println(monitorsToBeUpdated)
+	//fmt.Println(monitorsToBeUpdated)
 	/*
 		fmt.Println(remoteMonitors)*/
 }
 
-func prepareMonitors(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
+func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) map[string]model.Monitor {
+	preparedMonitors := make(map[string]model.Monitor)
+	for m := range monitorSet.Iterator().C {
+		monitorName := m.(string)
+		monitor := localMonitors[monitorName]
+
+		for i, trigger := range localMonitors[monitorName].Triggers {
+			monitor.Triggers[i].Id = trigger.Id
+
+			for j, action := range trigger.Actions {
+				monitor.Triggers[i].Actions[j].DestinationId = action.DestinationId
+			}
+		}
+
+		preparedMonitors[monitorName] = monitor
+	}
+
+	return preparedMonitors
+}
+
+func prepareForUpdate(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
 	preparedMonitors := make(map[string]model.Monitor)
 
 	for m := range monitorsToBeUpdated.Iterator().C {
