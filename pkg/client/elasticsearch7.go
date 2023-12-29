@@ -89,6 +89,9 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	for _, hit := range response.Hits.Hits {
 		if hit.Source.Destination.Name != "" {
 			destination := hit.Source.Destination
+			if destination.Id == "" {
+				destination.Id = hit.Id
+			}
 			//note: if the destinationId does not come from remote, we should be able to operate with destinationName so that we can operate from destinationName when changing the destination and creating a new monitor occur.
 			destinations[hit.Source.Destination.Name] = destination
 		}

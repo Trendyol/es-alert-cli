@@ -1,4 +1,4 @@
-- name: 'ProductOfferingPDP Product Detail API Monitor'
+- name: 'ProductOfferingPDP Product Detail API Monitor YAML4'
   type: "monitor"
   enabled: true
   schedule:
@@ -68,7 +68,7 @@
           lang: painless
       actions:
         - name: "ProductOfferingPDP Product Detail API Error Alert"
-          destinationId: product-offering-pdp-oncall
+          destinationId: reco-alerts
           subject:
             source: "ProductOfferingPDP Product Detail API Error Alert"
             lang: mustache
