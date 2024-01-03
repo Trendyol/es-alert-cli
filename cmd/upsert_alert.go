@@ -22,13 +22,22 @@ var upsertCmd = &cobra.Command{
 func init() {
 	upsertCmd.Flags().StringP("cluster", "c", "", "select your cluster ip to update.")
 	upsertCmd.Flags().StringP("filename", "n", "", "select your monitoring file name.")
-
-	rootCmd.AddCommand(upsertCmd)
 }
 
 func upsertAlerts(cmd *cobra.Command, args []string) {
-	//TODO: take the parameters from the flag
-	esAPIClient, err := client.NewElasticsearchAPI(args[0]) //TODO: read elastic address from cli variable
+	cluster, err := cmd.Flags().GetString("cluster")
+	if err != nil {
+		fmt.Println("error getting cluster parameter", err)
+		return
+	}
+
+	filename, err := cmd.Flags().GetString("filename")
+	if err != nil {
+		fmt.Println("error getting filename parameter", err)
+		return
+	}
+
+	esAPIClient, err := client.NewElasticsearchAPI(cluster)
 	fileReader, err := reader.NewFileReader()
 	if err != nil {
 		fmt.Println("we have an error", err)
@@ -48,8 +57,9 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error while read remote monitors", err)
 		return
 	}
+
 	//Get Local Monitors
-	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(cliCmd.monitoringFilename) //TODO: read yaml name from cli variable
+	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(filename)
 	if err != nil {
 		fmt.Println("error while read local file", err)
 		return

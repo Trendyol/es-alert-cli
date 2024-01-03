@@ -21,4 +21,5 @@ func Execute() {
 func init() {
 	cobra.OnInitialize()
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(upsertCmd)
 }
