@@ -19,13 +19,13 @@ func TestReadLocalYaml(t *testing.T) {
 	fileReader := &FileReader{}
 
 	// Call the function with the temporary file path
-	config, _, err := fileReader.ReadLocalYaml(tempFile)
+	monitorMap, _, err := fileReader.ReadLocalYaml(tempFile)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
 	// Define the expected result based on the content of the temporary YAML file
-	expectedConfig := []model.Monitor{
+	expectedMonitors := []model.Monitor{
 		{
 			Name:    "Monitor1",
 			Enabled: true,
@@ -35,24 +35,122 @@ func TestReadLocalYaml(t *testing.T) {
 					Unit:     "MINUTES",
 				},
 			},
-			// ... (other fields)
-		},
-		{
-			Name:    "Monitor2",
-			Enabled: false,
-			Schedule: model.Schedule{
-				Period: model.Period{
-					Interval: 10,
-					Unit:     "MINUTES",
+			Inputs: []model.Input{
+				{
+					Search: model.Search{
+						Indices: []string{"test-index"},
+						Query: model.QueryParam{
+							Query: model.InnerQuery{
+								Bool: model.BoolParam{
+									AdjustPureNegative: true,
+									Boost:              1,
+									Must: []model.MustParam{
+										{
+											Match: map[string]any{
+												"x.level": map[string]any{
+													"auto_generate_synonyms_phrase_query": true,
+													"fuzzy_transpositions":                true,
+													"query":                               "ERROR",
+													"boost":                               1,
+													"lenient":                             false,
+													"max_expansions":                      50,
+													"operator":                            "AND",
+													"prefix_length":                       0,
+													"zero_terms_query":                    "NONE",
+												},
+											},
+											Range: nil,
+										},
+										{
+											Match: map[string]any{
+												"kubernetes.labels.release": map[string]any{
+													"auto_generate_synonyms_phrase_query": true,
+													"fuzzy_transpositions":                true,
+													"query":                               "${QUERY}",
+													"boost":                               1,
+													"lenient":                             false,
+													"max_expansions":                      50,
+													"operator":                            "AND",
+													"prefix_length":                       0,
+													"zero_terms_query":                    "NONE",
+												},
+											},
+											Range: nil,
+										},
+										{
+											Match: nil,
+											Range: map[string]any{
+												"@timestamp": map[string]any{
+													"boost":         1,
+													"from":          "now-5m",
+													"include_lower": true,
+													"include_upper": false,
+													"time_zone":     "+03:00",
+													"to":            "now",
+												},
+											},
+										},
+									},
+									MustNot: []model.MustParam{
+										{
+											Match: map[string]any{
+												"x.message": map[string]any{
+													"auto_generate_synonyms_phrase_query": true,
+													"fuzzy_transpositions":                true,
+													"query":                               "Generic Exception Occurred. org.springframework.web.HttpRequestMethodNotSupportedException",
+													"boost":                               1,
+													"lenient":                             false,
+													"max_expansions":                      50,
+													"operator":                            "AND",
+													"prefix_length":                       0,
+													"zero_terms_query":                    "NONE",
+												},
+											},
+											Range: nil,
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
+			Triggers: []model.Trigger{
+				{
+					Id:       "",
+					Name:     "test-alert",
+					Severity: "3",
+					Condition: model.Condition{
+						Script: model.Script{
+							Source: "ctx.results[0].hits.total.value > 300",
+							Lang:   "painless",
+						},
+					},
+					Actions: []model.Action{
+						{
+							Name:            "test-alert",
+							DestinationName: "",
+							DestinationId:   "inventory-alerts",
+							SubjectTemplate: model.Script{
+								Source: "ProductOfferingPDP Product Detail API Error Alert",
+								Lang:   "mustache",
+							},
+							MessageTemplate: model.Script{
+								Source: "{\n  \"title\":\"title\",\n  \"monitor\":{\n      \"name\":\"monitor\",\n      \"enabled\":\"true\"\n  },\n  \"trigger\":{\n      \"id\":\"id\",\n      \"name\":\"{{ctx.trigger.name}} \\n> *Cluster-based Logs:* *<https://kibana-discovery-logging-01.stage.trendyol.com/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-20m,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:a0980db0-49f8-11ed-8c51-6f32aac10425,key:kubernetes.labels.release.keyword,negate:!f,params:(query:product-detail-api),type:phrase),query:(match_phrase:(kubernetes.labels.release.keyword:product-detail-api))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:a0980db0-49f8-11ed-8c51-6f32aac10425,key:x.level,negate:!f,params:(query:x.level),type:phrase),query:(match_phrase:(x.level:ERROR)))),index:a0980db0-49f8-11ed-8c51-6f32aac10425,interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))|stage >* \\n> *Sample Message:* {{ctx.results.0.hits.hits.0._source.x.message}}\\n> *Agent Name:* {{ctx.results.0.hits.hits.0._source.x.agent-name}}\\n> *Cluster:* {{ctx.results.0.hits.hits.0._source.x_cluster}}\\n> *Severity:* {{ctx.results.0.hits.hits.0._source.x.level}}\\n> *Count:* {{ctx.results.0.hits.total.value}}\",\n      \"severity\":\"1\"\n  },\n  \"periodStart\":\"start\",\n  \"periodEnd\":\"end\"\n}",
+								Lang:   "mustache",
+							},
+						},
+					},
+				},
+			},
+
 			// ... (other fields)
 		},
 	}
-
+	monitor := monitorMap["Monitor1"]
 	// Compare the actual result with the expected result
-	if !reflect.DeepEqual(config, expectedConfig) {
-		t.Errorf("Result mismatch. Expected:\n%v\nActual:\n%v", expectedConfig, config)
+	if !reflect.DeepEqual(monitor, expectedMonitors[0]) {
+		t.Errorf("Result mismatch. Expected:\n%v\nActual:\n%v", expectedMonitors[0], monitor)
 	}
 }
 
@@ -73,7 +171,7 @@ func createTempYAMLFile(t *testing.T) string {
 }
 
 func createMonitorYamlContent() string {
-	return `- name: ${MONITOR}
+	return `- name: Monitor1
   enabled: true
   schedule:
     period:
@@ -83,7 +181,7 @@ func createMonitorYamlContent() string {
   inputs:
     - search:
         indices:
-          - 'indexing-offer-log-*'
+          - 'test-index'
         query:
           query:
             bool:
@@ -91,7 +189,7 @@ func createMonitorYamlContent() string {
               boost: 1
               must:
                 - match:
-                    ${LEVEL}:
+                    x.level:
                       auto_generate_synonyms_phrase_query: true
                       boost: 1
                       fuzzy_transpositions: true
@@ -133,21 +231,33 @@ func createMonitorYamlContent() string {
                       query: Generic Exception Occurred. org.springframework.web.HttpRequestMethodNotSupportedException
                       zero_terms_query: NONE
   triggers:
-    - name: ${ALERT}
+    - name: test-alert
       severity: "3"
-      condition: ctx.results[0].hits.total.value > ${COUNT}
+      condition:
+        script:
+          source: ctx.results[0].hits.total.value > 300
+          lang: painless
       actions:
-        - name: ${ALERT}
+        - name: test-alert
           destinationId: inventory-alerts
-          subject: ${ALERT}
-          message: |-
-            Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the issue. 
-            ❗ *${ALERT}* is triggered by more than ${COUNT} errors. <!channel>
-            > *Cluster-based Logs:* *<https://${CLUSTER}/app/kibana#/discover?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-20m,to:now))&_a=(columns:!(x.message,x.msg),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'${INDEX_PATTERN_ID}',key:kubernetes.labels.release,negate:!f,params:(query:${QUERY}),type:phrase),query:(match_phrase:(kubernetes.labels.release:${QUERY}))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'${INDEX_PATTERN_ID}',key:${LEVEL},negate:!f,params:(query:ERROR),type:phrase),query:(match_phrase:(${LEVEL}:ERROR)))),index:'${INDEX_PATTERN_ID}',interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))|$DC>*
-            > *Sample Message:* {{ctx.results.0.hits.hits.0._source.x.message}}
-            > *Agent Name:* {{ctx.results.0.hits.hits.0._source.x.agent-name}}
-            > *Cluster:* {{ctx.results.0.hits.hits.0._source.x.cluster}}
-            > *Severity:* {{ctx.results.0.hits.hits.0._source.${LEVEL}}}
-            > *Count:* {{ctx.results.0.hits.total.value}}
-`
+          subject:
+            source: "ProductOfferingPDP Product Detail API Error Alert"
+            lang: mustache
+          message: 
+            source: |-
+              {
+                "title":"title",
+                "monitor":{
+                    "name":"monitor",
+                    "enabled":"true"
+                },
+                "trigger":{
+                    "id":"id",
+                    "name":"{{ctx.trigger.name}} \n> *Cluster-based Logs:* *<https://kibana-discovery-logging-01.stage.trendyol.com/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-20m,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:a0980db0-49f8-11ed-8c51-6f32aac10425,key:kubernetes.labels.release.keyword,negate:!f,params:(query:product-detail-api),type:phrase),query:(match_phrase:(kubernetes.labels.release.keyword:product-detail-api))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:a0980db0-49f8-11ed-8c51-6f32aac10425,key:x.level,negate:!f,params:(query:x.level),type:phrase),query:(match_phrase:(x.level:ERROR)))),index:a0980db0-49f8-11ed-8c51-6f32aac10425,interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))|stage >* \n> *Sample Message:* {{ctx.results.0.hits.hits.0._source.x.message}}\n> *Agent Name:* {{ctx.results.0.hits.hits.0._source.x.agent-name}}\n> *Cluster:* {{ctx.results.0.hits.hits.0._source.x_cluster}}\n> *Severity:* {{ctx.results.0.hits.hits.0._source.x.level}}\n> *Count:* {{ctx.results.0.hits.total.value}}",
+                    "severity":"1"
+                },
+                "periodStart":"start",
+                "periodEnd":"end"
+              }
+            lang: mustache`
 }

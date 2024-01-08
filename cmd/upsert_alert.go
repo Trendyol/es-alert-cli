@@ -95,10 +95,6 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		esAPIClient.UpdateMonitors(monitorsToBeUpdated)
 	}
 
-	//TODO: continue
-	//fmt.Println(monitorsToBeUpdated)
-	/*
-		fmt.Println(remoteMonitors)*/
 }
 
 func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) map[string]model.Monitor {
