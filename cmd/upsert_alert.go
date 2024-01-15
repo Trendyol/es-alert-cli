@@ -12,18 +12,42 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var fetch = &cobra.Command{
+var upsertCmd = &cobra.Command{
 	Use:   "upsert",
 	Short: "Upsert all alerts",
 	Long:  `Upsert command will push your monitoring yaml to remote if any change exists.`,
 	Run:   upsertAlerts,
 }
 
+func init() {
+	upsertCmd.Flags().StringP("cluster", "c", "", "select your cluster ip to update.")
+	upsertCmd.Flags().StringP("filename", "n", "", "select your monitoring file name.")
+}
+
 func upsertAlerts(cmd *cobra.Command, args []string) {
-	esAPIClient, err := client.NewElasticsearchAPI(args[0])
+	cluster, err := cmd.Flags().GetString("cluster")
+	if err != nil {
+		fmt.Println("error getting cluster parameter", err)
+		return
+	}
+
+	filename, err := cmd.Flags().GetString("filename")
+	if err != nil {
+		fmt.Println("error getting filename parameter", err)
+		return
+	}
+
+	esAPIClient, err := client.NewElasticsearchAPI(cluster)
 	fileReader, err := reader.NewFileReader()
 	if err != nil {
 		fmt.Println("we have an error", err)
+		return
+	}
+
+	//Get Destinations
+	destinations, err := esAPIClient.FetchDestinations()
+	if err != nil {
+		fmt.Println("error while read destinations", err)
 		return
 	}
 
@@ -33,8 +57,9 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error while read remote monitors", err)
 		return
 	}
+
 	//Get Local Monitors
-	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(cliCmd.monitoringFilename) //TODO: read yaml name from args like our old one
+	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(filename)
 	if err != nil {
 		fmt.Println("error while read local file", err)
 		return
@@ -60,29 +85,39 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	monitorsToBeUpdated := newMonitors.Union(modifiedMonitors)
-	preparedMonitors := prepareMonitors(monitorsToBeUpdated, localMonitors, remoteMonitors)
-
-	/*
-		//TODO: push created monitors
-		if shouldCreate {
-			esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
-		}*/
-
-	//NOTE: in progress
-	//TODO: when destination name changes, we should get destinationId from fetchDestinations.
-	if shouldUpdate {
-		esAPIClient.PushMonitors(monitorsToBeUpdated, preparedMonitors)
+	if shouldCreate {
+		monitorsToBeCreated := prepareForCreate(newMonitors, localMonitors, destinations)
+		esAPIClient.CreateMonitors(monitorsToBeCreated)
 	}
 
-	//TODO: continue
-	//TODO: when create a monitor, we should get destinationId from fetchDestinations.
-	fmt.Println(monitorsToBeUpdated)
-	/*
-		fmt.Println(remoteMonitors)*/
+	if shouldUpdate {
+		monitorsToBeUpdated := prepareForUpdate(modifiedMonitors, localMonitors, remoteMonitors)
+		esAPIClient.UpdateMonitors(monitorsToBeUpdated)
+	}
+
 }
 
-func prepareMonitors(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
+func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) map[string]model.Monitor {
+	preparedMonitors := make(map[string]model.Monitor)
+	for m := range monitorSet.Iterator().C {
+		monitorName := m.(string)
+		monitor := localMonitors[monitorName]
+
+		for i, trigger := range localMonitors[monitorName].Triggers {
+			monitor.Triggers[i].Id = trigger.Id
+
+			for j, action := range trigger.Actions {
+				monitor.Triggers[i].Actions[j].DestinationId = destinations[action.DestinationId].Id
+			}
+		}
+
+		preparedMonitors[monitorName] = monitor
+	}
+
+	return preparedMonitors
+}
+
+func prepareForUpdate(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
 	preparedMonitors := make(map[string]model.Monitor)
 
 	for m := range monitorsToBeUpdated.Iterator().C {
@@ -105,7 +140,7 @@ func prepareMonitors(monitorsToBeUpdated mapset.Set, localMonitors map[string]mo
 }
 
 func init() {
-	rootCmd.AddCommand(fetch)
+	rootCmd.AddCommand(upsertCmd)
 }
 
 func isMonitorChanged(localMonitor model.Monitor, remoteMonitor model.Monitor) bool {
@@ -119,7 +154,5 @@ func isMonitorChanged(localMonitor model.Monitor, remoteMonitor model.Monitor) b
 	return false
 }
 
-//TODO: diğer takımıdn değişiklikleri intersected'a gelir.
-//TODO: dosya içeriğini kontrol etmektense son gelenin isminden dümdüz update atabiliriz.
 //TODO: takımların folder altında monitor'leri bulunacak şekilde yapmamız düzenli yapabilir bunu da
 //TODO: mesela bi alert'ı mars'a bi alert'ı moon'a farklı threshold'larla nasıl aktaracağız?
