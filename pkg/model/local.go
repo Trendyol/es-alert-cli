@@ -1,6 +1,8 @@
 package model
 
 type Monitor struct {
+	Id       string    `yaml:"-" json:"-"`
+	Type     string    `yaml:"type" json:"type"`
 	Name     string    `yaml:"name" json:"name"`
 	Enabled  bool      `yaml:"enabled" json:"enabled"`
 	Schedule Schedule  `yaml:"schedule" json:"schedule"`
@@ -9,8 +11,7 @@ type Monitor struct {
 }
 
 type Schedule struct {
-	Period Period      `yaml:"period" json:"period"`
-	Cron   interface{} `yaml:"cron" json:"cron"`
+	Period Period `yaml:"period" json:"period"`
 }
 
 type Period struct {
@@ -23,66 +24,60 @@ type Input struct {
 }
 
 type Search struct {
-	Indices []string    `yaml:"indices"`
-	Query   QueryConfig `yaml:"query"`
+	Indices []string   `yaml:"indices" json:"indices"`
+	Query   QueryParam `yaml:"query" json:"query"`
 }
 
-type QueryConfig struct {
-	Query BoolConfig `yaml:"query"`
+type QueryParam struct {
+	Query InnerQuery `yaml:"query" json:"query"`
 }
 
-type BoolConfig struct {
-	AdjustPureNegative bool         `yaml:"adjust_pure_negative"`
-	Boost              int          `yaml:"boost"`
-	Must               []MustConfig `yaml:"must"`
-	MustNot            []MustConfig `yaml:"must_not"`
+type InnerQuery struct {
+	Bool BoolParam `yaml:"bool" json:"bool"`
 }
 
-type MustConfig struct {
-	Match MatchConfig `yaml:"match"`
-	Range RangeConfig `yaml:"range"`
+type BoolParam struct {
+	AdjustPureNegative bool        `yaml:"adjust_pure_negative" json:"adjust_pure_negative"`
+	Boost              float64     `yaml:"boost" json:"boost"`
+	Must               []MustParam `yaml:"must" json:"must"`
+	MustNot            []MustParam `yaml:"must_not" json:"must_not"`
 }
 
-type MatchConfig struct {
-	Field                string `yaml:"field"`
-	AutoGenerateSynonyms bool   `yaml:"auto_generate_synonyms_phrase_query"`
-	Boost                int    `yaml:"boost"`
-	FuzzyTranspositions  bool   `yaml:"fuzzy_transpositions"`
-	Lenient              bool   `yaml:"lenient"`
-	MaxExpansions        int    `yaml:"max_expansions"`
-	Operator             string `yaml:"operator"`
-	PrefixLength         int    `yaml:"prefix_length"`
-	Query                string `yaml:"query"`
-	ZeroTermsQuery       string `yaml:"zero_terms_query"`
+type MustParam struct {
+	Match map[string]any `yaml:"match" json:"match,omitempty"`
+	Range map[string]any `yaml:"range" json:"range,omitempty"`
 }
 
-type RangeConfig struct {
-	Field        string `yaml:"field"`
-	Boost        int    `yaml:"boost"`
-	From         string `yaml:"from"`
-	IncludeLower bool   `yaml:"include_lower"`
-	IncludeUpper bool   `yaml:"include_upper"`
-	TimeZone     string `yaml:"time_zone"`
-	To           string `yaml:"to"`
+type RangeParam struct {
+	Field        string `yaml:"field" json:"field"`
+	Boost        int    `yaml:"boost" json:"boost"`
+	From         string `yaml:"from" json:"from"`
+	IncludeLower bool   `yaml:"include_lower" json:"include_lower"`
+	IncludeUpper bool   `yaml:"include_upper" json:"includeUpper"`
+	TimeZone     string `yaml:"time_zone" json:"timeZone"`
+	To           string `yaml:"to" json:"to"`
 }
 
 type Trigger struct {
-	Name      string         `yaml:"name" json:"name"`
-	Severity  string         `yaml:"severity" json:"severity"`
-	Condition Condition      `yaml:"condition" json:"condition"`
-	Actions   []ActionConfig `yaml:"actions" json:"actions"`
+	Id        string    `yaml:"-" json:"id"`
+	Name      string    `yaml:"name" json:"name"`
+	Severity  string    `yaml:"severity" json:"severity"`
+	Condition Condition `yaml:"condition" json:"condition"`
+	Actions   []Action  `yaml:"actions" json:"actions"`
 }
 
-type ActionConfig struct {
-	Name          string `yaml:"name"`
-	DestinationId string `yaml:"destinationId"`
-	Subject       string `yaml:"subject"`
-	Message       string `yaml:"message"`
+type Action struct {
+	Name            string `yaml:"name" json:"name"`
+	DestinationName string `json:"destination_name,omitempty"`
+	DestinationId   string `yaml:"destinationId" json:"destination_id"`
+	SubjectTemplate Script `yaml:"subject" json:"subject_template"`
+	MessageTemplate Script `yaml:"message" json:"message_template"`
 }
-
 type Condition struct {
-	Script struct {
-		Source string `json:"source"`
-		Lang   string `json:"lang"`
-	} `json:"script"`
+	Script Script `yaml:"script" json:"script"`
+}
+
+type Script struct {
+	Source string `json:"source"`
+	Lang   string `json:"lang"`
 }

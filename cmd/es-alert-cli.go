@@ -11,10 +11,9 @@ import (
 type cli struct {
 	command            *cobra.Command
 	helpCommand        *cobra.Command
-	env                string
+	cluster            string
 	monitoringFilename string
 	deleteUntracked    bool
-	debug              bool
 }
 
 var cliCmd = &cli{
@@ -28,19 +27,14 @@ var cliCmd = &cli{
 		Run: func(cmd *cobra.Command, args []string) {
 			printHelp()
 		}},
-	env:                "dev",
-	monitoringFilename: "monitoring.yaml",
-	debug:              false,
+	cluster:            "",
+	monitoringFilename: "",
+	deleteUntracked:    false,
 }
 
 func init() {
 	rootCmd.AddCommand(cliCmd.command)
 	rootCmd.AddCommand(cliCmd.helpCommand)
-
-	cliCmd.command.Flags().StringVarP(&cliCmd.env, "env", "e", "dev", "select your env.")
-	cliCmd.command.Flags().StringVarP(&cliCmd.monitoringFilename, "filename", "n", "monitoring.yaml", "select your file name")
-	cliCmd.command.Flags().BoolVarP(&cliCmd.debug, "debug", "d", false, "enable debugging")
-
 	cliCmd.command.RunE = func(cmd *cobra.Command, args []string) error {
 		go func() {
 			log.Printf("Cli app running in this scope...")
