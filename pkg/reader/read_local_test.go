@@ -117,7 +117,7 @@ func TestReadLocalYaml(t *testing.T) {
 			},
 			Triggers: []model.Trigger{
 				{
-					Id:       "",
+					ID:       "",
 					Name:     "test-alert",
 					Severity: "3",
 					Condition: model.Condition{
@@ -130,7 +130,7 @@ func TestReadLocalYaml(t *testing.T) {
 						{
 							Name:            "test-alert",
 							DestinationName: "",
-							DestinationId:   "inventory-alerts",
+							DestinationID:   "inventory-alerts",
 							SubjectTemplate: model.Script{
 								Source: "My Test Alert",
 								Lang:   "mustache",
@@ -239,7 +239,7 @@ func createMonitorYamlContent() string {
           lang: painless
       actions:
         - name: test-alert
-          destinationId: inventory-alerts
+          destinationID: inventory-alerts
           subject:
             source: My Test Alert
             lang: mustache

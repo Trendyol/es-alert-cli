@@ -112,10 +112,10 @@ func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Moni
 		monitor := localMonitors[monitorName]
 
 		for i, trigger := range localMonitors[monitorName].Triggers {
-			monitor.Triggers[i].Id = trigger.Id
+			monitor.Triggers[i].ID = trigger.ID
 
 			for j, action := range trigger.Actions {
-				monitor.Triggers[i].Actions[j].DestinationId = destinations[action.DestinationId].Id
+				monitor.Triggers[i].Actions[j].DestinationID = destinations[action.DestinationID].ID
 			}
 		}
 
@@ -131,13 +131,13 @@ func prepareForUpdate(monitorsToBeUpdated mapset.Set, localMonitors map[string]m
 	for m := range monitorsToBeUpdated.Iterator().C {
 		monitorName := m.(string)
 		monitor := localMonitors[monitorName]
-		monitor.Id = remoteMonitors[monitorName].Id
+		monitor.ID = remoteMonitors[monitorName].ID
 
 		for i, trigger := range remoteMonitors[monitorName].Triggers {
-			monitor.Triggers[i].Id = trigger.Id
+			monitor.Triggers[i].ID = trigger.ID
 
 			for j, action := range trigger.Actions {
-				monitor.Triggers[i].Actions[j].DestinationId = action.DestinationId
+				monitor.Triggers[i].Actions[j].DestinationID = action.DestinationID
 			}
 		}
 
@@ -152,8 +152,6 @@ func isMonitorChanged(localMonitor model.Monitor, remoteMonitor model.Monitor) b
 	remoteYml, _ := yaml.Marshal(remoteMonitor)
 	var dmp = diffmatchpatch.New() //TODO: refactor this.
 	diffs := dmp.DiffMain(string(remoteYml), string(localYaml), true)
-	if len(diffs) > 1 {
-		return true
-	}
-	return false
+
+	return len(diffs) > 1
 }

@@ -1,7 +1,7 @@
 package model
 
 type Monitor struct {
-	Id       string    `yaml:"-" json:"-"`
+	ID       string    `yaml:"-" json:"-"`
 	Type     string    `yaml:"type" json:"type"`
 	Name     string    `yaml:"name" json:"name"`
 	Enabled  bool      `yaml:"enabled" json:"enabled"`
@@ -59,7 +59,7 @@ type RangeParam struct {
 }
 
 type Trigger struct {
-	Id        string    `yaml:"-" json:"id"`
+	ID        string    `yaml:"-" json:"id"`
 	Name      string    `yaml:"name" json:"name"`
 	Severity  string    `yaml:"severity" json:"severity"`
 	Condition Condition `yaml:"condition" json:"condition"`
@@ -69,7 +69,7 @@ type Trigger struct {
 type Action struct {
 	Name            string `yaml:"name" json:"name"`
 	DestinationName string `json:"destination_name,omitempty"`
-	DestinationId   string `yaml:"destinationId" json:"destination_id"`
+	DestinationID   string `yaml:"destinationID" json:"destination_id"`
 	SubjectTemplate Script `yaml:"subject" json:"subject_template"`
 	MessageTemplate Script `yaml:"message" json:"message_template"`
 }

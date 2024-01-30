@@ -32,18 +32,18 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 
 	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", alertQuery)
 	if err != nil {
-		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+		return nil, nil, fmt.Errorf("Error getting response: %s", err)
 	}
 
 	err = es.client.Bind(res.Body(), &response)
 	if err != nil {
-		return nil, nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+		return nil, nil, fmt.Errorf("Error getting response: %s", err)
 	}
 
 	monitors := make(map[string]model.Monitor)
 	remoteMonitorsSet := mapset.NewSet()
 	for _, hit := range response.Hits.Hits {
-		hit.Source.Monitor.Id = hit.Id
+		hit.Source.Monitor.ID = hit.ID
 		monitors[hit.Source.Monitor.Name] = hit.Source.Monitor
 		remoteMonitorsSet.Add(hit.Source.Monitor.Name)
 	}
@@ -83,10 +83,10 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	for _, hit := range response.Hits.Hits {
 		if hit.Source.Destination.Name != "" {
 			destination := hit.Source.Destination
-			if destination.Id == "" {
-				destination.Id = hit.Id
+			if destination.ID == "" {
+				destination.ID = hit.ID
 			}
-			//note: if the destinationId does not come from remote, we should be able to operate with destinationName so that we can operate from destinationName when changing the destination and creating a new monitor occur.
+			//note: if the destinationID does not come from remote, we should be able to operate with destinationName so that we can operate from destinationName when changing the destination and creating a new monitor occur.
 			destinations[hit.Source.Destination.Name] = destination
 		}
 	}
@@ -100,7 +100,7 @@ func (es ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]mode
 		log.Debug("Running monitor: ", monitorName)
 
 		// Send the request to the Elasticsearch cluster
-		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.Id)
+		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
 		res, err := es.client.PUT(path, currentMonitor)
 		if err != nil {
 			log.Fatal(errors.New(fmt.Sprintf("Error posting monitor: %s", err)))
@@ -121,7 +121,7 @@ func (es ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]mode
 		log.Debug("Running monitor: ", monitorName)
 
 		// Send the request to the Elasticsearch cluster
-		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.Id)
+		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
 		res, err := es.client.POST(path, currentMonitor)
 		if err != nil {
 			log.Fatal(errors.New(fmt.Sprintf("Error posting monitor: %s", err)))
