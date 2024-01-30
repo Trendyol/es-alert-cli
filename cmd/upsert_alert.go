@@ -6,7 +6,6 @@ import (
 	"github.com/Trendyol/es-alert-cli/pkg/model"
 	"github.com/Trendyol/es-alert-cli/pkg/reader"
 	mapset "github.com/deckarep/golang-set"
-	"github.com/labstack/gommon/log"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -30,6 +29,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error getting cluster parameter", err)
 		return
 	}
+	fmt.Printf("Cli will connect to %s\n", cluster)
 
 	filename, err := cmd.Flags().GetString("filename")
 	if err != nil {
@@ -38,6 +38,8 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	}
 
 	esAPIClient, err := client.NewElasticsearchAPI(cluster)
+	fmt.Println("Elastic api client created.")
+
 	fileReader, err := reader.NewFileReader()
 	if err != nil {
 		fmt.Println("we have an error", err)
@@ -50,6 +52,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error while read destinations", err)
 		return
 	}
+	fmt.Println("Destinations fetched.")
 
 	//Get Remote Monitors
 	remoteMonitors, remoteMonitorSet, err := esAPIClient.FetchMonitors()
@@ -57,6 +60,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error while read remote monitors", err)
 		return
 	}
+	fmt.Println("Monitors fetched.")
 
 	//Get Local Monitors
 	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(filename)
@@ -64,6 +68,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		fmt.Println("error while read local file", err)
 		return
 	}
+	fmt.Println("Local monitors read.")
 
 	unTrackedMonitors := remoteMonitorSet.Difference(localMonitorSet)
 	newMonitors := localMonitorSet.Difference(remoteMonitorSet)
@@ -81,20 +86,23 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	shouldUpdate := modifiedMonitors.Cardinality() > 0
 	shouldCreate := newMonitors.Cardinality() > 0
 	if !shouldCreate && !shouldUpdate && !shouldDelete {
-		log.Info("All monitors are up-to-date with remote monitors")
+		fmt.Println("All monitors are up-to-date with remote monitors")
 		return
 	}
 
 	if shouldCreate {
 		monitorsToBeCreated := prepareForCreate(newMonitors, localMonitors, destinations)
 		esAPIClient.CreateMonitors(monitorsToBeCreated)
+		fmt.Println("Monitors created.")
 	}
 
 	if shouldUpdate {
 		monitorsToBeUpdated := prepareForUpdate(modifiedMonitors, localMonitors, remoteMonitors)
 		esAPIClient.UpdateMonitors(monitorsToBeUpdated)
+		fmt.Println("Monitors updated.")
 	}
 
+	fmt.Println("All process completed.")
 }
 
 func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) map[string]model.Monitor {
