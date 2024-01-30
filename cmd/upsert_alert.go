@@ -46,7 +46,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	//Get Destinations
+	// Get Destinations
 	destinations, err := esAPIClient.FetchDestinations()
 	if err != nil {
 		fmt.Println("error while read destinations", err)
@@ -54,7 +54,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	}
 	fmt.Println("Destinations fetched.")
 
-	//Get Remote Monitors
+	// Get Remote Monitors
 	remoteMonitors, remoteMonitorSet, err := esAPIClient.FetchMonitors()
 	if err != nil {
 		fmt.Println("error while read remote monitors", err)
@@ -62,7 +62,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	}
 	fmt.Println("Monitors fetched.")
 
-	//Get Local Monitors
+	// Get Local Monitors
 	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(filename)
 	if err != nil {
 		fmt.Println("error while read local file", err)
