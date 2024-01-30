@@ -2,14 +2,15 @@ package reader
 
 import (
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/Trendyol/es-alert-cli/pkg/model"
 	mapset "github.com/deckarep/golang-set"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
 )
 
-type FileReader struct {
-}
+type FileReader struct{}
 
 func NewFileReader() (*FileReader, error) {
 	return &FileReader{}, nil
@@ -17,9 +18,16 @@ func NewFileReader() (*FileReader, error) {
 
 func (f *FileReader) ReadLocalYaml(filename string) (map[string]model.Monitor, mapset.Set, error) {
 	// Read YAML file
-	data, err := ioutil.ReadFile(filename)
+	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Error reading YAML file:", err)
+		fmt.Println("Error opening file:", err)
+		return nil, nil, err
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Println("Error reading file:", err)
 		return nil, nil, err
 	}
 

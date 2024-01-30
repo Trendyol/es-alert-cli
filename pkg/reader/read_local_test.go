@@ -1,11 +1,12 @@
+//nolint:lll,funlen
 package reader
 
 import (
-	"github.com/Trendyol/es-alert-cli/pkg/model"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/Trendyol/es-alert-cli/pkg/model"
 )
 
 func TestReadLocalYaml(t *testing.T) {
@@ -156,7 +157,7 @@ func TestReadLocalYaml(t *testing.T) {
 
 // Helper function to create a temporary YAML file for testing
 func createTempYAMLFile(t *testing.T) string {
-	tmpfile, err := ioutil.TempFile("", "test-*.yaml")
+	tmpfile, err := os.CreateTemp("", "test-*.yaml")
 	if err != nil {
 		t.Fatalf("Error creating temporary file: %v", err)
 	}

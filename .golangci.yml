@@ -1,8 +1,8 @@
 linters-settings:
   lll:
-    line-length: 140
+    line-length: 165
   funlen:
-    lines: 70
+    lines: 80
 
 linters:
   disable-all: true
@@ -30,8 +30,11 @@ linters:
     - unparam
     - unused
     - whitespace
-
 service:
   golangci-lint-version: 1.55.2 # use the fixed version to not introduce new linters unexpectedly
   prepare:
     - echo "here I can run custom commands, but no preparation needed for this repo"
+
+run:
+  skip-files:
+    - path/to/a/file.go

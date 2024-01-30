@@ -1,8 +1,8 @@
 package client
 
 import (
-	"errors"
 	"fmt"
+
 	"github.com/Trendyol/es-alert-cli/pkg/model"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/labstack/gommon/log"
@@ -19,7 +19,6 @@ func NewElasticsearchAPI(client string) (*ElasticsearchAPIClient, error) {
 type ElasticsearchQuery map[string]interface{}
 
 func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, mapset.Set, error) {
-
 	// Since this is very simple call to match all maximum monitors which is 1000 for now
 	alertQuery := ElasticsearchQuery{
 		"size": 1000,
@@ -32,12 +31,12 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 
 	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", alertQuery)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error getting response: %s", err)
+		return nil, nil, fmt.Errorf("error getting response: %s", err)
 	}
 
 	err = es.client.Bind(res.Body(), &response)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error getting response: %s", err)
+		return nil, nil, fmt.Errorf("error getting response: %s", err)
 	}
 
 	monitors := make(map[string]model.Monitor)
@@ -52,7 +51,6 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 }
 
 func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destination, error) {
-
 	// Since this is very simple call to match all maximum monitors which is 1000 for now
 	query := ElasticsearchQuery{
 		"query": ElasticsearchQuery{
@@ -71,12 +69,12 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	// Send the request to the Elasticsearch cluster
 	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", query)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+		log.Fatal(fmt.Errorf("error getting response: %s", err))
 	}
 
 	err = es.client.Bind(res.Body(), &response)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error getting response: %s", err))
+		log.Fatal(fmt.Errorf("error binding response: %s", err))
 	}
 
 	destinations := make(map[string]model.Destination)
@@ -86,7 +84,9 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 			if destination.ID == "" {
 				destination.ID = hit.ID
 			}
-			//note: if the destinationID does not come from remote, we should be able to operate with destinationName so that we can operate from destinationName when changing the destination and creating a new monitor occur.
+			// note: if the destinationID does not come from remote,
+			// we should be able to operate with destinationName
+			// so that we can operate from destinationName when changing the destination and creating a new monitor occur.
 			destinations[hit.Source.Destination.Name] = destination
 		}
 	}
@@ -103,14 +103,14 @@ func (es ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]mode
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
 		res, err := es.client.PUT(path, currentMonitor)
 		if err != nil {
-			log.Fatal(errors.New(fmt.Sprintf("Error posting monitor: %s", err)))
+			log.Fatal(fmt.Errorf("error posting monitor: %s", err))
 		}
 
 		// Bind the response
 		var monitorResponse model.UpdateMonitorResponse
 		err = es.client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
-			log.Fatal(errors.New(fmt.Sprintf("Error getting response: %s", err)))
+			log.Fatal(fmt.Errorf("error getting response: %s", err))
 		}
 	}
 }
@@ -124,14 +124,14 @@ func (es ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]mode
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
 		res, err := es.client.POST(path, currentMonitor)
 		if err != nil {
-			log.Fatal(errors.New(fmt.Sprintf("Error posting monitor: %s", err)))
+			log.Fatal(fmt.Errorf("error posting monitor: %s", err))
 		}
 
 		// Bind the response
 		var monitorResponse model.UpdateMonitorResponse
 		err = es.client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
-			log.Fatal(errors.New(fmt.Sprintf("Error getting response: %s", err)))
+			log.Fatal(fmt.Errorf("error getting response: %s", err))
 		}
 	}
 }

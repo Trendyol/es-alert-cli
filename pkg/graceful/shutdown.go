@@ -2,11 +2,12 @@ package graceful
 
 import (
 	"context"
-	"github.com/labstack/gommon/log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/labstack/gommon/log"
 )
 
 // Shutdown shuts down the app gracefully when receiving an os.Interrupt or syscall.SIGTERM signal.

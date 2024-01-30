@@ -3,8 +3,9 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/valyala/fasthttp"
 	"strings"
+
+	"github.com/valyala/fasthttp"
 )
 
 type BaseClient struct {
@@ -18,6 +19,7 @@ func NewBaseClient(baseURL string) *BaseClient {
 		baseURL: baseURL,
 	}
 }
+
 func (b *BaseClient) GET(url string, token ...string) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -37,6 +39,7 @@ func (b *BaseClient) GET(url string, token ...string) (*fasthttp.Response, error
 	}
 	return res, err
 }
+
 func (b *BaseClient) POST(url string, pv interface{}, opts ...map[string]string) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -61,6 +64,7 @@ func (b *BaseClient) POST(url string, pv interface{}, opts ...map[string]string)
 	}
 	return res, err
 }
+
 func (b *BaseClient) PUT(url string, pv interface{}, opts ...map[string]string) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -85,6 +89,7 @@ func (b *BaseClient) PUT(url string, pv interface{}, opts ...map[string]string) 
 	}
 	return res, err
 }
+
 func (b BaseClient) getBody(res *fasthttp.Response) error {
 	contentEncoding := res.Header.Peek("Content-Encoding")
 	switch {
@@ -106,6 +111,7 @@ func (b BaseClient) getBody(res *fasthttp.Response) error {
 		return nil
 	}
 }
+
 func (b BaseClient) Bind(body []byte, rv interface{}) error {
 	if len(body) > 0 || body != nil {
 		if err := json.Unmarshal(body, &rv); err != nil {
@@ -114,6 +120,7 @@ func (b BaseClient) Bind(body []byte, rv interface{}) error {
 	}
 	return nil
 }
+
 func (b BaseClient) setOptsHeader(opts map[string]string, req *fasthttp.Request) {
 	if opts == nil {
 		return
