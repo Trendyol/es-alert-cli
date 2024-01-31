@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Trendyol/es-alert-cli/pkg/graceful"
-	"github.com/spf13/cobra"
 	"log"
 	"time"
+
+	"github.com/Trendyol/es-alert-cli/pkg/graceful"
+	"github.com/spf13/cobra"
 )
 
 type cli struct {
@@ -26,7 +27,8 @@ var cliCmd = &cli{
 		Short: "help for es-alert-cli",
 		Run: func(cmd *cobra.Command, args []string) {
 			printHelp()
-		}},
+		},
+	},
 	cluster:            "",
 	monitoringFilename: "",
 	deleteUntracked:    false,

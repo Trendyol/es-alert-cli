@@ -12,7 +12,7 @@ type CustomWebhook struct {
 	Username     string            `json:"username,omitempty" yaml:",omitempty"`
 }
 
-// TODO: simplfy model
+// TODO: simplify model
 type ElasticFetchResponse struct {
 	Took     int  `json:"took"`
 	TimedOut bool `json:"timed_out"`
@@ -31,7 +31,7 @@ type ElasticFetchResponse struct {
 		Hits     []struct {
 			Index       string  `json:"_index"`
 			Type        string  `json:"_type"`
-			Id          string  `json:"_id"`
+			ID          string  `json:"_id"`
 			Version     int     `json:"_version"`
 			SeqNo       int     `json:"_seq_no"`
 			PrimaryTerm int     `json:"_primary_term"`
@@ -45,7 +45,7 @@ type ElasticFetchResponse struct {
 }
 
 type Destination struct {
-	Id            string        `json:"id"`
+	ID            string        `json:"id"`
 	Name          string        `json:"name"`
 	Type          string        `json:"type"`
 	Slack         Slack         `json:"slack,omitempty" yaml:",omitempty"`
@@ -57,54 +57,9 @@ type Slack struct {
 }
 
 type UpdateMonitorResponse struct {
-	Id          string  `json:"_id"`
+	ID          string  `json:"_id"`
 	Version     int     `json:"_version"`
 	SeqNo       int     `json:"_seq_no"`
 	PrimaryTerm int     `json:"_primary_term"`
 	Monitor     Monitor `json:"monitor"`
 }
-
-//
-//type Monitor struct {
-//	SchemaVersion  int       `json:"schema_version"`
-//	EnabledTime    *int64    `json:"enabled_time"`
-//	LastUpdateTime int64     `json:"last_update_time"`
-//	Name           string    `json:"name"`
-//	Type           string    `json:"type"`
-//	Inputs         []Input   `json:"inputs"`
-//	Enabled        bool      `json:"enabled"`
-//	Triggers       []Trigger `json:"triggers"`
-//}
-//
-//type Trigger struct {
-//	Severity  string `json:"severity"`
-//	Condition struct {
-//		Template struct {
-//			Source string `json:"source"`
-//			Lang   string `json:"lang"`
-//		} `json:"script"`
-//	} `json:"condition"`
-//	Name    string `json:"name"`
-//	Id      string `json:"id"`
-//	Actions []struct {
-//		MessageTemplate struct {
-//			Source string `json:"source"`
-//			Lang   string `json:"lang"`
-//		} `json:"message_template"`
-//		ThrottleEnabled bool   `json:"throttle_enabled"`
-//		DestinationId   string `json:"destination_id"`
-//		Name            string `json:"name"`
-//		SubjectTemplate struct {
-//			Source string `json:"source"`
-//			Lang   string `json:"lang"`
-//		} `json:"subject_template"`
-//		Id string `json:"id"`
-//	} `json:"actions"`
-//}
-//
-//type Input struct {
-//	Search struct {
-//		Indices []string               `json:"indices"`
-//		Query   map[string]interface{} `json:"query"`
-//	} `json:"search"`
-//}

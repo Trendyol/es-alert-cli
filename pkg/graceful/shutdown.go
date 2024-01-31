@@ -2,11 +2,12 @@ package graceful
 
 import (
 	"context"
-	"github.com/labstack/gommon/log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/labstack/gommon/log"
 )
 
 // Shutdown shuts down the app gracefully when receiving an os.Interrupt or syscall.SIGTERM signal.
@@ -22,5 +23,5 @@ func Shutdown(timeout time.Duration) {
 
 	log.Infof("shutting down cli app with %s timeout", timeout)
 
-	//close something here
+	// close something here
 }

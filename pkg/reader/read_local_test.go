@@ -1,11 +1,12 @@
+//nolint:lll,funlen
 package reader
 
 import (
-	"github.com/Trendyol/es-alert-cli/pkg/model"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/Trendyol/es-alert-cli/pkg/model"
 )
 
 func TestReadLocalYaml(t *testing.T) {
@@ -117,7 +118,7 @@ func TestReadLocalYaml(t *testing.T) {
 			},
 			Triggers: []model.Trigger{
 				{
-					Id:       "",
+					ID:       "",
 					Name:     "test-alert",
 					Severity: "3",
 					Condition: model.Condition{
@@ -130,7 +131,7 @@ func TestReadLocalYaml(t *testing.T) {
 						{
 							Name:            "test-alert",
 							DestinationName: "",
-							DestinationId:   "inventory-alerts",
+							DestinationID:   "inventory-alerts",
 							SubjectTemplate: model.Script{
 								Source: "My Test Alert",
 								Lang:   "mustache",
@@ -156,7 +157,7 @@ func TestReadLocalYaml(t *testing.T) {
 
 // Helper function to create a temporary YAML file for testing
 func createTempYAMLFile(t *testing.T) string {
-	tmpfile, err := ioutil.TempFile("", "test-*.yaml")
+	tmpfile, err := os.CreateTemp("", "test-*.yaml")
 	if err != nil {
 		t.Fatalf("Error creating temporary file: %v", err)
 	}
@@ -239,7 +240,7 @@ func createMonitorYamlContent() string {
           lang: painless
       actions:
         - name: test-alert
-          destinationId: inventory-alerts
+          destinationID: inventory-alerts
           subject:
             source: My Test Alert
             lang: mustache

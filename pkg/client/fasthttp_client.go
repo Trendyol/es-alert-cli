@@ -3,26 +3,28 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/valyala/fasthttp"
 	"strings"
+
+	"github.com/valyala/fasthttp"
 )
 
 type BaseClient struct {
 	client  *fasthttp.Client
-	baseUrl string
+	baseURL string
 }
 
-func NewBaseClient(baseUrl string) *BaseClient {
+func NewBaseClient(baseURL string) *BaseClient {
 	return &BaseClient{
 		client:  new(fasthttp.Client),
-		baseUrl: baseUrl,
+		baseURL: baseURL,
 	}
 }
+
 func (b *BaseClient) GET(url string, token ...string) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	res := fasthttp.AcquireResponse()
-	req.SetRequestURI(b.baseUrl + url)
+	req.SetRequestURI(b.baseURL + url)
 	req.Header.SetMethod("GET")
 	if len(token) > 0 && strings.TrimSpace(token[0]) != "" {
 		req.Header.Set("Authorization", token[0])
@@ -37,11 +39,12 @@ func (b *BaseClient) GET(url string, token ...string) (*fasthttp.Response, error
 	}
 	return res, err
 }
+
 func (b *BaseClient) POST(url string, pv interface{}, opts ...map[string]string) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	res := fasthttp.AcquireResponse()
-	req.SetRequestURI(b.baseUrl + url)
+	req.SetRequestURI(b.baseURL + url)
 	req.Header.SetMethod("POST")
 	for _, opt := range opts {
 		b.setOptsHeader(opt, req)
@@ -61,11 +64,12 @@ func (b *BaseClient) POST(url string, pv interface{}, opts ...map[string]string)
 	}
 	return res, err
 }
+
 func (b *BaseClient) PUT(url string, pv interface{}, opts ...map[string]string) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	res := fasthttp.AcquireResponse()
-	req.SetRequestURI(b.baseUrl + url)
+	req.SetRequestURI(b.baseURL + url)
 	req.Header.SetMethod("PUT")
 	for _, opt := range opts {
 		b.setOptsHeader(opt, req)
@@ -85,6 +89,7 @@ func (b *BaseClient) PUT(url string, pv interface{}, opts ...map[string]string) 
 	}
 	return res, err
 }
+
 func (b BaseClient) getBody(res *fasthttp.Response) error {
 	contentEncoding := res.Header.Peek("Content-Encoding")
 	switch {
@@ -106,6 +111,7 @@ func (b BaseClient) getBody(res *fasthttp.Response) error {
 		return nil
 	}
 }
+
 func (b BaseClient) Bind(body []byte, rv interface{}) error {
 	if len(body) > 0 || body != nil {
 		if err := json.Unmarshal(body, &rv); err != nil {
@@ -114,10 +120,13 @@ func (b BaseClient) Bind(body []byte, rv interface{}) error {
 	}
 	return nil
 }
+
 func (b BaseClient) setOptsHeader(opts map[string]string, req *fasthttp.Request) {
-	if opts != nil {
-		for k, v := range opts {
-			req.Header.Set(k, v)
-		}
+	if opts == nil {
+		return
+	}
+
+	for k, v := range opts {
+		req.Header.Set(k, v)
 	}
 }
