@@ -6,18 +6,20 @@ ES ALERT CLI is an open-source project that facilitates the management of Elasti
 ## Getting Started
 To use this tool, follow the steps below:
 
-```bash
+
 1. Install the necessary dependencies by running:
-   go get -u github.com/Trendyol/es-alert-cli
-   ```
+    ```bash
+    go get -u github.com/Trendyol/es-alert-cli  
+    ```
 
-```bash
+
 2. Navigate to the project directory and build the CLI tool:
-   go build -o es-alert-cli
-   ```
+    ```bash
+    go build -o es-alert-cli
+    ```
 
-```bash
 3. Run the tool with the `-c` and `-n` flags, providing your cluster IP and monitoring file name:
+   ```bash
    ./es-alert-cli upsert -c <your_cluster_ip> -n <your_monitoring_file_name>
    ```
 
@@ -37,7 +39,6 @@ To use this tool, follow the steps below:
 ```
 
 ## Dependencies
-- [github.com/Trendyol/es-alert-cli](https://github.com/Trendyol/es-alert-cli)
 - [github.com/deckarep/golang-set](https://github.com/deckarep/golang-set)
 - [github.com/sergi/go-diff/diffmatchpatch](https://github.com/sergi/go-diff/diffmatchpatch)
 - [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)
