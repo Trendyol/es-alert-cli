@@ -31,12 +31,12 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 
 	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", alertQuery)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error getting response: %s", err)
+		return nil, nil, fmt.Errorf("err while getting monitor response: %s", err)
 	}
 
 	err = es.client.Bind(res.Body(), &response)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error getting response: %s", err)
+		return nil, nil, fmt.Errorf("err while binding monitor response: %s", err)
 	}
 
 	monitors := make(map[string]model.Monitor)
@@ -69,12 +69,12 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	// Send the request to the Elasticsearch cluster
 	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", query)
 	if err != nil {
-		log.Fatal(fmt.Errorf("error getting response: %s", err))
+		log.Fatal(fmt.Errorf("err while getting destination response: %s", err))
 	}
 
 	err = es.client.Bind(res.Body(), &response)
 	if err != nil {
-		log.Fatal(fmt.Errorf("error binding response: %s", err))
+		log.Fatal(fmt.Errorf("err while binding destination response: %s", err))
 	}
 
 	destinations := make(map[string]model.Destination)
@@ -103,14 +103,14 @@ func (es ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]mode
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
 		res, err := es.client.PUT(path, currentMonitor)
 		if err != nil {
-			log.Fatal(fmt.Errorf("error posting monitor: %s", err))
+			log.Fatal(fmt.Errorf("err while updating monitor: %s", err))
 		}
 
 		// Bind the response
 		var monitorResponse model.UpdateMonitorResponse
 		err = es.client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
-			log.Fatal(fmt.Errorf("error getting response: %s", err))
+			log.Fatal(fmt.Errorf("err while binding monitor update response, response: %s", err))
 		}
 	}
 }
@@ -124,14 +124,14 @@ func (es ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]mode
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
 		res, err := es.client.POST(path, currentMonitor)
 		if err != nil {
-			log.Fatal(fmt.Errorf("error posting monitor: %s", err))
+			log.Fatal(fmt.Errorf("err while posting to create monitor: %s", err))
 		}
 
 		// Bind the response
 		var monitorResponse model.UpdateMonitorResponse
 		err = es.client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
-			log.Fatal(fmt.Errorf("error getting response: %s", err))
+			log.Fatal(fmt.Errorf("err while binding create monitor response: %s", err))
 		}
 	}
 }

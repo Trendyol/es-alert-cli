@@ -31,7 +31,6 @@ func (f *FileReader) ReadLocalYaml(filename string) (map[string]model.Monitor, m
 		return nil, nil, err
 	}
 
-	// Unmarshal YAML into struct
 	var monitors []model.Monitor
 	err = yaml.Unmarshal(data, &monitors)
 	if err != nil {
