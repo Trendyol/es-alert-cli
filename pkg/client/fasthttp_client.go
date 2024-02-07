@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"strings"
 
 	"github.com/valyala/fasthttp"
 )
@@ -20,77 +19,57 @@ func NewBaseClient(baseURL string) *BaseClient {
 	}
 }
 
-func (b *BaseClient) GET(url string, token ...string) (*fasthttp.Response, error) {
+func (b *BaseClient) Post(url string, pv interface{}) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
-	res := fasthttp.AcquireResponse()
-	req.SetRequestURI(b.baseURL + url)
-	req.Header.SetMethod("GET")
-	if len(token) > 0 && strings.TrimSpace(token[0]) != "" {
-		req.Header.Set("Authorization", token[0])
-	}
-	req.SetRequestURIBytes(req.RequestURI())
-	if err := b.client.Do(req, res); err != nil {
-		return nil, err
-	}
-	err := b.getBody(res)
-	if err != nil {
-		return nil, err
-	}
-	return res, err
-}
 
-func (b *BaseClient) POST(url string, pv interface{}, opts ...map[string]string) (*fasthttp.Response, error) {
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
 	res := fasthttp.AcquireResponse()
 	req.SetRequestURI(b.baseURL + url)
 	req.Header.SetMethod("POST")
-	for _, opt := range opts {
-		b.setOptsHeader(opt, req)
-	}
+
 	body, err := json.Marshal(pv)
 	if err != nil {
 		return nil, err
 	}
 	req.SetBody(body)
 	req.Header.SetContentType("application/json")
+
 	if err := b.client.Do(req, res); err != nil {
 		return nil, err
 	}
-	err = b.getBody(res)
+	err = getBody(res)
 	if err != nil {
 		return nil, err
 	}
 	return res, err
 }
 
-func (b *BaseClient) PUT(url string, pv interface{}, opts ...map[string]string) (*fasthttp.Response, error) {
+func (b *BaseClient) Put(url string, pv interface{}) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
+
 	res := fasthttp.AcquireResponse()
 	req.SetRequestURI(b.baseURL + url)
 	req.Header.SetMethod("PUT")
-	for _, opt := range opts {
-		b.setOptsHeader(opt, req)
-	}
+
 	body, err := json.Marshal(pv)
 	if err != nil {
 		return nil, err
 	}
 	req.SetBody(body)
 	req.Header.SetContentType("application/json")
+
 	if err := b.client.Do(req, res); err != nil {
 		return nil, err
 	}
-	err = b.getBody(res)
+	err = getBody(res)
 	if err != nil {
 		return nil, err
 	}
 	return res, err
 }
 
-func (b BaseClient) getBody(res *fasthttp.Response) error {
+func getBody(res *fasthttp.Response) error {
 	contentEncoding := res.Header.Peek("Content-Encoding")
 	switch {
 	case bytes.EqualFold(contentEncoding, []byte("gzip")):
@@ -112,21 +91,11 @@ func (b BaseClient) getBody(res *fasthttp.Response) error {
 	}
 }
 
-func (b BaseClient) Bind(body []byte, rv interface{}) error {
+func (b *BaseClient) Bind(body []byte, rv interface{}) error {
 	if len(body) > 0 || body != nil {
 		if err := json.Unmarshal(body, &rv); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (b BaseClient) setOptsHeader(opts map[string]string, req *fasthttp.Request) {
-	if opts == nil {
-		return
-	}
-
-	for k, v := range opts {
-		req.Header.Set(k, v)
-	}
 }

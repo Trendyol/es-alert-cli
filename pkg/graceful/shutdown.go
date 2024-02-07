@@ -22,6 +22,4 @@ func Shutdown(timeout time.Duration) {
 	defer cancel()
 
 	log.Infof("shutting down cli app with %s timeout", timeout)
-
-	// close something here
 }

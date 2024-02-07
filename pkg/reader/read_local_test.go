@@ -22,7 +22,7 @@ func TestReadLocalYaml(t *testing.T) {
 	// Call the function with the temporary file path
 	monitorMap, _, err := fileReader.ReadLocalYaml(tempFile)
 	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
+		t.Fatalf("Unexpected err: %v", err)
 	}
 
 	// Define the expected result based on the content of the temporary YAML file
