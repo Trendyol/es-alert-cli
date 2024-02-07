@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/Trendyol/es-alert-cli/pkg/errs"
+
 	"github.com/Trendyol/es-alert-cli/pkg/client"
 	"github.com/Trendyol/es-alert-cli/pkg/model"
 	"github.com/Trendyol/es-alert-cli/pkg/reader"
@@ -31,19 +33,19 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 	}
 	fmt.Printf("Cli will connect to %s\n", cluster)
 	esAPIClient, err := client.NewElasticsearchAPI(cluster)
-	if handleError(err, "Error creating Elasticsearch API client") {
+	if errs.HandleError(err, "Error creating Elasticsearch API client") {
 		return
 	}
 	fmt.Println("Elastic api client created.")
 
 	fileReader, err := reader.NewFileReader()
-	if handleError(err, "error while creating file reader") {
+	if errs.HandleError(err, "err while creating file reader") {
 		return
 	}
 
 	// Get Destinations
 	destinations, err := esAPIClient.FetchDestinations()
-	if handleError(err, "error while read destinations") {
+	if errs.HandleError(err, "err while read destinations") {
 		return
 	}
 
@@ -51,7 +53,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 
 	// Get Remote Monitors
 	remoteMonitors, remoteMonitorSet, err := esAPIClient.FetchMonitors()
-	if handleError(err, "error while read remote monitors") {
+	if errs.HandleError(err, "err while read remote monitors") {
 		return
 	}
 
@@ -59,7 +61,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 
 	// Get Local Monitors
 	localMonitors, localMonitorSet, err := fileReader.ReadLocalYaml(filename)
-	if handleError(err, "error while read local file") {
+	if errs.HandleError(err, "err while read local file") {
 		return
 	}
 	fmt.Println("Local monitors read.")
@@ -92,11 +94,11 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 
 func getFlagVariables(cmd *cobra.Command) (string, string, bool) {
 	cluster, err := cmd.Flags().GetString("cluster")
-	if handleError(err, "error getting cluster parameter") {
+	if errs.HandleError(err, "err getting cluster parameter") {
 		return "", "", false
 	}
 	filename, err := cmd.Flags().GetString("filename")
-	if handleError(err, "error getting filename parameter") {
+	if errs.HandleError(err, "err getting filename parameter") {
 		return "", "", false
 	}
 	return cluster, filename, true
@@ -181,12 +183,4 @@ func isMonitorChanged(localMonitor model.Monitor, remoteMonitor model.Monitor) b
 	diffs := dmp.DiffMain(string(remoteYml), string(localYaml), true)
 
 	return len(diffs) > 1
-}
-
-func handleError(err error, message string) bool {
-	if err != nil {
-		fmt.Printf("%s: %v\n", message, err)
-		return true
-	}
-	return false
 }

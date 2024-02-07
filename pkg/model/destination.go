@@ -12,31 +12,11 @@ type CustomWebhook struct {
 	Username     string            `json:"username,omitempty" yaml:",omitempty"`
 }
 
-// TODO: simplify model
 type ElasticFetchResponse struct {
-	Took     int  `json:"took"`
-	TimedOut bool `json:"timed_out"`
-	Shards   struct {
-		Total      int `json:"total"`
-		Successful int `json:"successful"`
-		Skipped    int `json:"skipped"`
-		Failed     int `json:"failed"`
-	} `json:"_shards"`
 	Hits struct {
-		Total struct {
-			Value    int    `json:"value"`
-			Relation string `json:"relation"`
-		} `json:"total"`
-		MaxScore float64 `json:"max_score"`
-		Hits     []struct {
-			Index       string  `json:"_index"`
-			Type        string  `json:"_type"`
-			ID          string  `json:"_id"`
-			Version     int     `json:"_version"`
-			SeqNo       int     `json:"_seq_no"`
-			PrimaryTerm int     `json:"_primary_term"`
-			Score       float64 `json:"_score"`
-			Source      struct {
+		Hits []struct {
+			ID     string `json:"_id"`
+			Source struct {
 				Destination Destination `json:"destination,omitempty"`
 				Monitor     Monitor     `json:"monitor,omitempty"`
 			} `json:"_source"`
