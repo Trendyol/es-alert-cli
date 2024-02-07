@@ -29,7 +29,7 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 
 	var response model.ElasticFetchResponse
 
-	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", alertQuery)
+	res, err := es.client.Post("/_opendistro/_alerting/monitors/_search", alertQuery)
 	if err != nil {
 		return nil, nil, fmt.Errorf("err while getting monitor response: %s", err)
 	}
@@ -67,7 +67,7 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	var response model.ElasticFetchResponse
 
 	// Send the request to the Elasticsearch cluster
-	res, err := es.client.POST("/_opendistro/_alerting/monitors/_search", query)
+	res, err := es.client.Post("/_opendistro/_alerting/monitors/_search", query)
 	if err != nil {
 		log.Fatal(fmt.Errorf("err while getting destination response: %s", err))
 	}
@@ -101,7 +101,7 @@ func (es ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]mode
 
 		// Send the request to the Elasticsearch cluster
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
-		res, err := es.client.PUT(path, currentMonitor)
+		res, err := es.client.Put(path, currentMonitor)
 		if err != nil {
 			log.Fatal(fmt.Errorf("err while updating monitor: %s", err))
 		}
@@ -122,7 +122,7 @@ func (es ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]mode
 
 		// Send the request to the Elasticsearch cluster
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
-		res, err := es.client.POST(path, currentMonitor)
+		res, err := es.client.Post(path, currentMonitor)
 		if err != nil {
 			log.Fatal(fmt.Errorf("err while posting to create monitor: %s", err))
 		}

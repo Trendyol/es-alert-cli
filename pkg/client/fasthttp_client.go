@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-
 	"github.com/valyala/fasthttp"
 )
 
@@ -19,7 +18,7 @@ func NewBaseClient(baseURL string) *BaseClient {
 	}
 }
 
-func (b *BaseClient) POST(url string, pv interface{}) (*fasthttp.Response, error) {
+func (b *BaseClient) Post(url string, pv interface{}) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
@@ -44,7 +43,7 @@ func (b *BaseClient) POST(url string, pv interface{}) (*fasthttp.Response, error
 	return res, err
 }
 
-func (b *BaseClient) PUT(url string, pv interface{}) (*fasthttp.Response, error) {
+func (b *BaseClient) Put(url string, pv interface{}) (*fasthttp.Response, error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
