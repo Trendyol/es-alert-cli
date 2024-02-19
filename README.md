@@ -38,10 +38,13 @@ To use this tool, follow the steps below:
 ./es-alert-cli upsert -c <your_cluster_ip> -n <your_monitoring_file_name>
 ```
 
-## Dependencies
+## Code of Conduct
+
+[Contributor Code of Conduct](CODE-OF-CONDUCT.md). By participating in this project you agree to abide by its terms.
+
+## Libraries Used For This Project
 - [github.com/deckarep/golang-set](https://github.com/deckarep/golang-set)
 - [github.com/sergi/go-diff/diffmatchpatch](https://github.com/sergi/go-diff/diffmatchpatch)
-- [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)
 
 ## Contribution
 Contributions are welcome! Feel free to open issues, submit pull requests, or provide feedback.
