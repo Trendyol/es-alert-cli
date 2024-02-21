@@ -11,16 +11,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type MonitorService struct {
+//go:generate mockery --name=MonitorService --output=../mocks/monitorservicemock
+
+type MonitorService interface {
+	Upsert(filename string, deleteUntracked bool) error
+}
+
+type monitorService struct {
 	reader *reader.FileReader
 	client *client.ElasticsearchAPIClient
 }
 
-func NewMonitorService(reader *reader.FileReader, client *client.ElasticsearchAPIClient) *MonitorService {
-	return &MonitorService{reader: reader, client: client}
+func NewMonitorService(reader *reader.FileReader, client *client.ElasticsearchAPIClient) MonitorService {
+	return &monitorService{reader: reader, client: client}
 }
 
-func (m MonitorService) Upsert(filename string, deleteUntracked bool) error {
+func (m monitorService) Upsert(filename string, deleteUntracked bool) error {
 
 	// Get Destinations
 	destinations, err := m.client.FetchDestinations()
