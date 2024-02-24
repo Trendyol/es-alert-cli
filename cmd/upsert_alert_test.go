@@ -1,0 +1,34 @@
+package cmd
+
+import (
+	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestGetFlagVariables_ValidFlags(t *testing.T) {
+	cmd := &cobra.Command{}
+	cmd.Flags().String("cluster", "http://example.com:9200", "")
+	cmd.Flags().String("filename", "example.yaml", "")
+
+	cluster, filename, ok := getFlagVariables(cmd)
+	assert.Equal(t, "http://example.com:9200", cluster)
+	assert.Equal(t, "example.yaml", filename)
+	assert.True(t, ok)
+}
+
+func TestGetFlagVariables_MissingClusterFlag(t *testing.T) {
+	cmd := &cobra.Command{}
+	cmd.Flags().String("filename", "example.yaml", "")
+	cmd.Flags().Set("cluster", "") // Simulate missing cluster flag
+	_, _, ok := getFlagVariables(cmd)
+	assert.False(t, ok)
+}
+
+func TestGetFlagVariables_MissingFilenameFlag(t *testing.T) {
+	cmd := &cobra.Command{}
+	cmd.Flags().String("cluster", "http://example.com:9200", "")
+	cmd.Flags().Set("filename", "") // Simulate missing filename flag
+	_, _, ok := getFlagVariables(cmd)
+	assert.False(t, ok)
+}
