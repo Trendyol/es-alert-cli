@@ -4,47 +4,63 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Trendyol/es-alert-cli/pkg/client"
+	"github.com/Trendyol/es-alert-cli/pkg/errs"
 	"github.com/Trendyol/es-alert-cli/pkg/model"
 	"github.com/Trendyol/es-alert-cli/pkg/reader"
 	mapset "github.com/deckarep/golang-set"
+	"github.com/labstack/gommon/log"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"gopkg.in/yaml.v3"
 )
 
 type MonitorService struct {
-	reader *reader.FileReader
-	client *client.ElasticsearchAPIClient
+	reader reader.FileReaderInterface
+	client client.ElasticsearchAPIClientInterface
 }
 
-func NewMonitorService(reader *reader.FileReader, client *client.ElasticsearchAPIClient) *MonitorService {
-	return &MonitorService{reader: reader, client: client}
+type MonitorServiceInterface interface {
+	Upsert(filename string, deleteUntracked bool) error
 }
 
-func (m MonitorService) Upsert(filename string, deleteUntracked bool) error {
+func NewMonitorService(cluster string) (*MonitorService, error) {
+	esAPIClient, err := client.NewElasticsearchAPI(cluster)
+	if errs.LogError(err, "Error creating Elasticsearch API client") {
+		return nil, err
+	}
+	log.Info("Elastic api client created.")
+
+	fileReader, err := reader.NewFileReader()
+	if errs.LogError(err, "err while creating file reader") {
+		return nil, err
+	}
+	return &MonitorService{reader: fileReader, client: esAPIClient}, nil
+}
+
+func (m MonitorService) Upsert(filename string, deleteUntracked bool) ([]model.UpdateMonitorResponse, error) {
 
 	// Get Destinations
 	destinations, err := m.client.FetchDestinations()
 	if err != nil {
-		return errors.New(fmt.Sprintf("%s: %v\n", "err while reading destinations", err))
+		return nil, errors.New(fmt.Sprintf("%s: %v\n", "err while reading destinations", err))
 	}
 
-	fmt.Println("Destinations fetched.")
+	log.Info("Destinations fetched.")
 
 	// Get Remote Monitors
 	remoteMonitors, remoteMonitorSet, err := m.client.FetchMonitors()
 	if err != nil {
-		return errors.New(fmt.Sprintf("%s: %v\n", "err while reading remote monitors", err))
+		return nil, errors.New(fmt.Sprintf("%s: %v\n", "err while reading remote monitors", err))
 	}
 
-	fmt.Println("Monitors fetched.")
+	log.Info("Monitors fetched.")
 
 	// Get Local Monitors
 	localMonitors, localMonitorSet, err := m.reader.ReadLocalYaml(filename)
 	if err != nil {
-		return errors.New(fmt.Sprintf("%s: %v\n", "err while reading local files", err))
+		return nil, errors.New(fmt.Sprintf("%s: %v\n", "err while reading local files", err))
 	}
 
-	fmt.Println("Local monitors read.")
+	log.Info("Local monitors read.")
 
 	unTrackedMonitors := remoteMonitorSet.Difference(localMonitorSet)
 	newMonitors := localMonitorSet.Difference(remoteMonitorSet)
@@ -57,19 +73,19 @@ func (m MonitorService) Upsert(filename string, deleteUntracked bool) error {
 	shouldUpdate := modifiedMonitors.Cardinality() > 0
 	shouldCreate := newMonitors.Cardinality() > 0
 	if !shouldCreate && !shouldUpdate && !shouldDelete {
-		fmt.Println("All monitors are up-to-date with remote monitors")
-		return nil
+		log.Info("All monitors are up-to-date with remote monitors")
+		return []model.UpdateMonitorResponse{}, nil
 	}
 
 	if shouldCreate {
-		createMonitors(newMonitors, localMonitors, destinations, m.client)
+		return m.createMonitors(newMonitors, localMonitors, destinations), nil
 	}
 
 	if shouldUpdate {
-		updateMonitors(modifiedMonitors, localMonitors, remoteMonitors, m.client)
+		return m.updateMonitors(modifiedMonitors, localMonitors, remoteMonitors), nil
 	}
 
-	return nil
+	return []model.UpdateMonitorResponse{}, nil
 }
 
 func findModifiedMonitors(intersectedMonitors mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) mapset.Set {
@@ -82,24 +98,14 @@ func findModifiedMonitors(intersectedMonitors mapset.Set, localMonitors map[stri
 	return modifiedMonitors
 }
 
-func updateMonitors(modifiedMonitors mapset.Set,
-	localMonitors map[string]model.Monitor,
-	remoteMonitors map[string]model.Monitor,
-	esAPIClient *client.ElasticsearchAPIClient,
-) {
+func (m MonitorService) updateMonitors(modifiedMonitors mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
 	monitorsToBeUpdated := prepareForUpdate(modifiedMonitors, localMonitors, remoteMonitors)
-	esAPIClient.UpdateMonitors(monitorsToBeUpdated)
-	fmt.Println("Monitors updated.")
+	return m.client.UpdateMonitors(monitorsToBeUpdated)
 }
 
-func createMonitors(newMonitors mapset.Set,
-	localMonitors map[string]model.Monitor,
-	destinations map[string]model.Destination,
-	esAPIClient *client.ElasticsearchAPIClient,
-) {
+func (m MonitorService) createMonitors(newMonitors mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) []model.UpdateMonitorResponse {
 	monitorsToBeCreated := prepareForCreate(newMonitors, localMonitors, destinations)
-	esAPIClient.CreateMonitors(monitorsToBeCreated)
-	fmt.Println("Monitors created.")
+	return m.client.CreateMonitors(monitorsToBeCreated)
 }
 
 func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) map[string]model.Monitor {
@@ -147,7 +153,7 @@ func prepareForUpdate(monitorsToBeUpdated mapset.Set, localMonitors map[string]m
 func isMonitorChanged(localMonitor model.Monitor, remoteMonitor model.Monitor) bool {
 	localYaml, _ := yaml.Marshal(localMonitor)
 	remoteYml, _ := yaml.Marshal(remoteMonitor)
-	dmp := diffmatchpatch.New() // TODO: refactor this.
+	dmp := diffmatchpatch.New()
 	diffs := dmp.DiffMain(string(remoteYml), string(localYaml), true)
 
 	return len(diffs) > 1

@@ -1,7 +1,7 @@
 package reader
 
 import (
-	"fmt"
+	"github.com/labstack/gommon/log"
 	"io"
 	"os"
 
@@ -12,6 +12,10 @@ import (
 
 type FileReader struct{}
 
+type FileReaderInterface interface {
+	ReadLocalYaml(filename string) (map[string]model.Monitor, mapset.Set, error)
+}
+
 func NewFileReader() (*FileReader, error) {
 	return &FileReader{}, nil
 }
@@ -20,21 +24,21 @@ func (f *FileReader) ReadLocalYaml(filename string) (map[string]model.Monitor, m
 	// Read YAML file
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		log.Errorf("Error opening file:", err.Error())
 		return nil, nil, err
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		fmt.Println("Error reading file:", err)
+		log.Errorf("Error reading file:", err)
 		return nil, nil, err
 	}
 
 	var monitors []model.Monitor
 	err = yaml.Unmarshal(data, &monitors)
 	if err != nil {
-		fmt.Println("Error unmarshalling YAML:", err)
+		log.Errorf("Error unmarshalling YAML:", err)
 		return nil, nil, err
 	}
 

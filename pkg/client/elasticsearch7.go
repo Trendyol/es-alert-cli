@@ -16,9 +16,16 @@ func NewElasticsearchAPI(client string) (*ElasticsearchAPIClient, error) {
 	return &ElasticsearchAPIClient{client: NewBaseClient(client)}, nil
 }
 
+type ElasticsearchAPIClientInterface interface {
+	FetchDestinations() (map[string]model.Destination, error)
+	FetchMonitors() (map[string]model.Monitor, mapset.Set, error)
+	UpdateMonitors(preparedMonitors map[string]model.Monitor) []model.UpdateMonitorResponse
+	CreateMonitors(monitors map[string]model.Monitor) []model.UpdateMonitorResponse
+}
+
 type ElasticsearchQuery map[string]interface{}
 
-func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, mapset.Set, error) {
+func (es *ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, mapset.Set, error) {
 	// Since this is very simple call to match all maximum monitors which is 1000 for now
 	alertQuery := ElasticsearchQuery{
 		"size": 1000,
@@ -50,7 +57,7 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 	return monitors, remoteMonitorsSet, nil
 }
 
-func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destination, error) {
+func (es *ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destination, error) {
 	// Since this is very simple call to match all maximum monitors which is 1000 for now
 	query := ElasticsearchQuery{
 		"query": ElasticsearchQuery{
@@ -94,7 +101,8 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	return destinations, nil
 }
 
-func (es ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]model.Monitor) {
+func (es *ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
+	response := make([]model.UpdateMonitorResponse, len(preparedMonitors))
 	for monitorName, currentMonitor := range preparedMonitors {
 		// Select monitor
 		log.Debug("Running monitor: ", monitorName)
@@ -113,9 +121,12 @@ func (es ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]mode
 			log.Fatal(fmt.Errorf("err while binding monitor update response, response: %s", err))
 		}
 	}
+	log.Info("Monitors updated.")
+	return response
 }
 
-func (es ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]model.Monitor) {
+func (es *ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
+	response := make([]model.UpdateMonitorResponse, len(preparedMonitors))
 	for monitorName, currentMonitor := range preparedMonitors {
 		// Select monitor
 		log.Debug("Running monitor: ", monitorName)
@@ -133,5 +144,8 @@ func (es ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]mode
 		if err != nil {
 			log.Fatal(fmt.Errorf("err while binding create monitor response: %s", err))
 		}
+		response = append(response, monitorResponse)
 	}
+	log.Info("Monitors created.")
+	return response
 }
