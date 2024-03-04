@@ -1,13 +1,13 @@
 package model
 
 type Monitor struct {
+	Schedule Schedule  `yaml:"schedule" json:"schedule"`
 	ID       string    `yaml:"-" json:"-"`
 	Type     string    `yaml:"type" json:"type"`
 	Name     string    `yaml:"name" json:"name"`
-	Enabled  bool      `yaml:"enabled" json:"enabled"`
-	Schedule Schedule  `yaml:"schedule" json:"schedule"`
 	Inputs   []Input   `yaml:"inputs" json:"inputs"`
 	Triggers []Trigger `yaml:"triggers" json:"triggers"`
+	Enabled  bool      `yaml:"enabled" json:"enabled"`
 }
 
 type Schedule struct {
@@ -15,8 +15,8 @@ type Schedule struct {
 }
 
 type Period struct {
-	Interval int    `yaml:"interval" json:"interval"`
 	Unit     string `yaml:"unit" json:"unit"`
+	Interval int    `yaml:"interval" json:"interval"`
 }
 
 type Input struct {
@@ -37,10 +37,10 @@ type InnerQuery struct {
 }
 
 type BoolParam struct {
-	AdjustPureNegative bool        `yaml:"adjust_pure_negative" json:"adjust_pure_negative"`
-	Boost              float64     `yaml:"boost" json:"boost"`
 	Must               []MustParam `yaml:"must" json:"must"`
 	MustNot            []MustParam `yaml:"must_not" json:"must_not"`
+	Boost              float64     `yaml:"boost" json:"boost"`
+	AdjustPureNegative bool        `yaml:"adjust_pure_negative" json:"adjust_pure_negative"`
 }
 
 type MustParam struct {
@@ -50,12 +50,12 @@ type MustParam struct {
 
 type RangeParam struct {
 	Field        string `yaml:"field" json:"field"`
-	Boost        int    `yaml:"boost" json:"boost"`
 	From         string `yaml:"from" json:"from"`
-	IncludeLower bool   `yaml:"include_lower" json:"include_lower"`
-	IncludeUpper bool   `yaml:"include_upper" json:"includeUpper"`
 	TimeZone     string `yaml:"time_zone" json:"timeZone"`
 	To           string `yaml:"to" json:"to"`
+	Boost        int    `yaml:"boost" json:"boost"`
+	IncludeLower bool   `yaml:"include_lower" json:"include_lower"`
+	IncludeUpper bool   `yaml:"include_upper" json:"includeUpper"`
 }
 
 type Trigger struct {

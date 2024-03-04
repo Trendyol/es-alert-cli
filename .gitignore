@@ -20,6 +20,9 @@
 #idea folders
 **/.idea/
 
+#generated files
+/mocks
+
 # Go workspace files
 go.work
 /es-alert-cli
