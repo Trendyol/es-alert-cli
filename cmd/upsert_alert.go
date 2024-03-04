@@ -42,10 +42,8 @@ func upsertMonitors(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if response != nil {
-		for _, monitorResponse := range response {
-			log.Info(fmt.Sprintf("monitor with id: %s is created", monitorResponse.ID))
-		}
+	for _, monitorResponse := range response {
+		log.Info(fmt.Sprintf("monitor with id: %s is created", monitorResponse.ID))
 	}
 
 	log.Info("All process completed.")
