@@ -223,7 +223,7 @@ func TestUpsert_ShouldReturnErrorWhenFetchDestinationsReturnError(t *testing.T) 
 
 	// Test Upsert
 	resp, err := mockMonitorService.Upsert("filename", false)
-	assert.Equal(t, err.Error(), "err while reading destinations: fetchDestinationError\n")
+	assert.Equal(t, err.Error(), "err while reading destinations: fetchDestinationError")
 	assert.Equal(t, len(resp), 0)
 }
 
@@ -250,7 +250,7 @@ func TestUpsert_ShouldReturnErrorIfFetchMonitorReturnsError(t *testing.T) {
 
 	// Test Upsert
 	resp, err := mockMonitorService.Upsert("filename", false)
-	assert.Equal(t, err.Error(), "err while reading remote monitors: fetchMonitorError\n")
+	assert.Equal(t, err.Error(), "err while reading remote monitors: fetchMonitorError")
 	assert.Equal(t, len(resp), 0)
 }
 
@@ -277,7 +277,7 @@ func TestUpsert_ShouldReturnErrorIfReadLocalMonitorReturnsError(t *testing.T) {
 
 	// Test Upsert
 	resp, err := mockMonitorService.Upsert("filename", false)
-	assert.Equal(t, err.Error(), "err while reading local files: localMonitorError\n")
+	assert.Equal(t, err.Error(), "err while reading local files: localMonitorError")
 	assert.Equal(t, len(resp), 0)
 }
 
