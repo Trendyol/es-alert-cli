@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/Trendyol/es-alert-cli/internal"
 	"github.com/labstack/gommon/log"
 

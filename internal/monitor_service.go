@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+
 	"github.com/Trendyol/es-alert-cli/pkg/client"
 	"github.com/Trendyol/es-alert-cli/pkg/errs"
 	"github.com/Trendyol/es-alert-cli/pkg/model"
@@ -87,7 +88,8 @@ func (m MonitorService) Upsert(filename string, deleteUntracked bool) ([]model.U
 }
 
 func findModifiedMonitors(intersectedMonitors mapset.Set, localMonitors map[string]model.Monitor,
-	remoteMonitors map[string]model.Monitor) mapset.Set {
+	remoteMonitors map[string]model.Monitor,
+) mapset.Set {
 	modifiedMonitors := mapset.NewSet()
 	for intersectedMonitorName := range intersectedMonitors.Iterator().C {
 		if isMonitorChanged(localMonitors[intersectedMonitorName.(string)],
@@ -99,19 +101,22 @@ func findModifiedMonitors(intersectedMonitors mapset.Set, localMonitors map[stri
 }
 
 func (m MonitorService) updateMonitors(modifiedMonitors mapset.Set, localMonitors map[string]model.Monitor,
-	remoteMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
+	remoteMonitors map[string]model.Monitor,
+) []model.UpdateMonitorResponse {
 	monitorsToBeUpdated := prepareForUpdate(modifiedMonitors, localMonitors, remoteMonitors)
 	return m.client.UpdateMonitors(monitorsToBeUpdated)
 }
 
 func (m MonitorService) createMonitors(newMonitors mapset.Set, localMonitors map[string]model.Monitor,
-	destinations map[string]model.Destination) []model.UpdateMonitorResponse {
+	destinations map[string]model.Destination,
+) []model.UpdateMonitorResponse {
 	monitorsToBeCreated := prepareForCreate(newMonitors, localMonitors, destinations)
 	return m.client.CreateMonitors(monitorsToBeCreated)
 }
 
 func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor,
-	destinations map[string]model.Destination) map[string]model.Monitor {
+	destinations map[string]model.Destination,
+) map[string]model.Monitor {
 	preparedMonitors := make(map[string]model.Monitor)
 	for m := range monitorSet.Iterator().C {
 		monitorName := m.(string)
@@ -132,7 +137,8 @@ func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Moni
 }
 
 func prepareForUpdate(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor,
-	remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
+	remoteMonitors map[string]model.Monitor,
+) map[string]model.Monitor {
 	preparedMonitors := make(map[string]model.Monitor)
 
 	for m := range monitorsToBeUpdated.Iterator().C {

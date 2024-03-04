@@ -2,13 +2,14 @@ package internal
 
 import (
 	"errors"
+	"testing"
+
 	clientMock "github.com/Trendyol/es-alert-cli/mocks/github.com/Trendyol/es-alert-cli/pkg/client"
 	readerMock "github.com/Trendyol/es-alert-cli/mocks/github.com/Trendyol/es-alert-cli/pkg/reader"
 	"github.com/Trendyol/es-alert-cli/pkg/model"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func Test_Different_Monitor_Should_Return_Changed(t *testing.T) {
@@ -133,7 +134,6 @@ func TestUpsert_ShouldUpdateMonitor(t *testing.T) {
 	resp, err := mockMonitorService.Upsert("filename", false)
 	assert.NoError(t, err)
 	assert.Equal(t, resp[0].ID, "monitor1")
-
 }
 
 func TestUpsert_ShouldCreateMonitor(t *testing.T) {
@@ -199,7 +199,6 @@ func TestUpsert_ShouldCreateMonitor(t *testing.T) {
 	resp, err := mockMonitorService.Upsert("filename", false)
 	assert.NoError(t, err)
 	assert.Equal(t, resp[0].ID, "monitor1")
-
 }
 
 func TestUpsert_ShouldReturnErrorWhenFetchDestinationsReturnError(t *testing.T) {
@@ -226,7 +225,6 @@ func TestUpsert_ShouldReturnErrorWhenFetchDestinationsReturnError(t *testing.T) 
 	resp, err := mockMonitorService.Upsert("filename", false)
 	assert.Equal(t, err.Error(), "err while reading destinations: fetchDestinationError\n")
 	assert.Equal(t, len(resp), 0)
-
 }
 
 func TestUpsert_ShouldReturnErrorIfFetchMonitorReturnsError(t *testing.T) {

@@ -1,9 +1,10 @@
 package reader
 
 import (
-	"github.com/labstack/gommon/log"
 	"io"
 	"os"
+
+	"github.com/labstack/gommon/log"
 
 	"github.com/Trendyol/es-alert-cli/pkg/model"
 	mapset "github.com/deckarep/golang-set"

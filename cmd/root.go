@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/labstack/gommon/log"
 	"os"
+
+	"github.com/labstack/gommon/log"
 
 	"github.com/spf13/cobra"
 )
