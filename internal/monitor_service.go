@@ -36,7 +36,6 @@ func NewMonitorService(cluster string) (*MonitorService, error) {
 }
 
 func (m MonitorService) Upsert(filename string, deleteUntracked bool) ([]model.UpdateMonitorResponse, error) {
-
 	// Get Destinations
 	destinations, err := m.client.FetchDestinations()
 	if err != nil {
@@ -87,27 +86,32 @@ func (m MonitorService) Upsert(filename string, deleteUntracked bool) ([]model.U
 	return []model.UpdateMonitorResponse{}, nil
 }
 
-func findModifiedMonitors(intersectedMonitors mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) mapset.Set {
+func findModifiedMonitors(intersectedMonitors mapset.Set, localMonitors map[string]model.Monitor,
+	remoteMonitors map[string]model.Monitor) mapset.Set {
 	modifiedMonitors := mapset.NewSet()
 	for intersectedMonitorName := range intersectedMonitors.Iterator().C {
-		if isMonitorChanged(localMonitors[intersectedMonitorName.(string)], remoteMonitors[intersectedMonitorName.(string)]) {
+		if isMonitorChanged(localMonitors[intersectedMonitorName.(string)],
+			remoteMonitors[intersectedMonitorName.(string)]) {
 			modifiedMonitors.Add(intersectedMonitorName)
 		}
 	}
 	return modifiedMonitors
 }
 
-func (m MonitorService) updateMonitors(modifiedMonitors mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
+func (m MonitorService) updateMonitors(modifiedMonitors mapset.Set, localMonitors map[string]model.Monitor,
+	remoteMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
 	monitorsToBeUpdated := prepareForUpdate(modifiedMonitors, localMonitors, remoteMonitors)
 	return m.client.UpdateMonitors(monitorsToBeUpdated)
 }
 
-func (m MonitorService) createMonitors(newMonitors mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) []model.UpdateMonitorResponse {
+func (m MonitorService) createMonitors(newMonitors mapset.Set, localMonitors map[string]model.Monitor,
+	destinations map[string]model.Destination) []model.UpdateMonitorResponse {
 	monitorsToBeCreated := prepareForCreate(newMonitors, localMonitors, destinations)
 	return m.client.CreateMonitors(monitorsToBeCreated)
 }
 
-func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor, destinations map[string]model.Destination) map[string]model.Monitor {
+func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Monitor,
+	destinations map[string]model.Destination) map[string]model.Monitor {
 	preparedMonitors := make(map[string]model.Monitor)
 	for m := range monitorSet.Iterator().C {
 		monitorName := m.(string)
@@ -127,7 +131,8 @@ func prepareForCreate(monitorSet mapset.Set, localMonitors map[string]model.Moni
 	return preparedMonitors
 }
 
-func prepareForUpdate(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor, remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
+func prepareForUpdate(monitorsToBeUpdated mapset.Set, localMonitors map[string]model.Monitor,
+	remoteMonitors map[string]model.Monitor) map[string]model.Monitor {
 	preparedMonitors := make(map[string]model.Monitor)
 
 	for m := range monitorsToBeUpdated.Iterator().C {
