@@ -1,0 +1,77 @@
+- name: <YOUR APP NAME>
+  type: "monitor"
+  enabled: true
+  schedule:
+    period:
+      interval: 5
+      unit: MINUTES
+    cron: null
+  inputs:
+    - search:
+        indices:
+          - '<your-index-prefix>-*'
+        query:
+          query:
+            bool:
+              adjust_pure_negative: true
+              boost: 1.0
+              must:
+                - match:
+                    kubernetes.labels.release:
+                      auto_generate_synonyms_phrase_query: true
+                      boost: 1.0
+                      fuzzy_transpositions: true
+                      lenient: false
+                      max_expansions: 50
+                      operator: AND
+                      prefix_length: 0
+                      query: <YOUR-APP-NAME>
+                      zero_terms_query: NONE
+                - match:
+                    x.level:
+                      auto_generate_synonyms_phrase_query: true
+                      boost: 1.0
+                      fuzzy_transpositions: true
+                      lenient: false
+                      max_expansions: 50
+                      operator: AND
+                      prefix_length: 0
+                      query: <YOUR-LEVEL>
+                      zero_terms_query: NONE
+                - range:
+                    '@timestamp':
+                      boost: 1.0
+                      from: now-5m
+                      include_lower: true
+                      include_upper: false
+                      time_zone: "+03:00"
+                      to: now
+              must_not:
+                - match:
+                    x.message:
+                      auto_generate_synonyms_phrase_query: true
+                      boost: 1.0
+                      fuzzy_transpositions: true
+                      lenient: false
+                      max_expansions: 50
+                      operator: AND
+                      prefix_length: 0
+                      query: <IGNORED-LOG-QUERY-TEXT>
+                      zero_terms_query: NONE
+  triggers:
+    - name: <ALERT-NAME>
+      severity: <SEVERITY>
+      condition:
+        script:
+          source: ctx.results[0].hits.total.value > <COUNT>
+          lang: painless
+      actions:
+        - name: <ALERT>
+          destinationId: <DESTINATION-NAME> #cli is getting destination with name to be more clear
+          subject:
+            source: <ALERT>
+            lang: mustache
+          message:
+            source: |-
+              <MESSAGE>
+            lang: mustache
