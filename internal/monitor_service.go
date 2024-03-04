@@ -40,7 +40,7 @@ func (m MonitorService) Upsert(filename string, deleteUntracked bool) ([]model.U
 	// Get Destinations
 	destinations, err := m.client.FetchDestinations()
 	if err != nil {
-		return nil, fmt.Errorf("%s: %v\n", "err while reading destinations", err)
+		return nil, fmt.Errorf("%s: %v", "err while reading destinations", err)
 	}
 
 	log.Info("Destinations fetched.")
@@ -48,7 +48,7 @@ func (m MonitorService) Upsert(filename string, deleteUntracked bool) ([]model.U
 	// Get Remote Monitors
 	remoteMonitors, remoteMonitorSet, err := m.client.FetchMonitors()
 	if err != nil {
-		return nil, fmt.Errorf("%s: %v\n", "err while reading remote monitors", err)
+		return nil, fmt.Errorf("%s: %v", "err while reading remote monitors", err)
 	}
 
 	log.Info("Monitors fetched.")
@@ -56,7 +56,7 @@ func (m MonitorService) Upsert(filename string, deleteUntracked bool) ([]model.U
 	// Get Local Monitors
 	localMonitors, localMonitorSet, err := m.reader.ReadLocalYaml(filename)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %v\n", "err while reading local files", err)
+		return nil, fmt.Errorf("%s: %v", "err while reading local files", err)
 	}
 
 	log.Info("Local monitors read.")
