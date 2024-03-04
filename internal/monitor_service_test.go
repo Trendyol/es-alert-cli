@@ -56,51 +56,6 @@ func Test_PrepareForCreate(t *testing.T) {
 	assert.Equal(t, expected, createdMonitors, "Prepared monitors for create should match expected")
 }
 
-//func Test_PrepareForUpdate(t *testing.T) {
-//	localMonitors := map[string]model.Monitor{
-//		"monitor1": createTestMonitor("monitor1", "destination1"),
-//	}
-//	remoteMonitors := map[string]model.Monitor{
-//		"monitor1": {
-//			ID: "remote_monitor_id",
-//			Triggers: []model.Trigger{
-//				{
-//					ID: "trigger1",
-//					Actions: []model.Action{
-//						{
-//							Name:          "action1",
-//							DestinationID: "remote_destination_id",
-//						},
-//					},
-//				},
-//			},
-//		},
-//	}
-//	modifiedMonitors := mapset.NewSet()
-//	modifiedMonitors.Add("monitor1")
-//
-//	expected := map[string]model.Monitor{
-//		"monitor1": {
-//			ID: "remote_monitor_id",
-//			Triggers: []model.Trigger{
-//				{
-//					ID: "trigger1",
-//					Actions: []model.Action{
-//						{
-//							Name:          "action1",
-//							DestinationID: "remote_destination_id",
-//						},
-//					},
-//				},
-//			},
-//		},
-//	}
-//
-//	updatedMonitors := prepareForUpdate(modifiedMonitors, localMonitors, remoteMonitors)
-//
-//	assert.Equal(t, expected, updatedMonitors, "Prepared monitors for update should match expected")
-//}
-
 func Test_IsMonitorChanged(t *testing.T) {
 	localMonitor := createTestMonitor("monitor1", "destination1")
 	remoteMonitor := createTestMonitor("monitor1", "destination2")

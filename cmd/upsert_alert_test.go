@@ -20,7 +20,7 @@ func TestGetFlagVariables_ValidFlags(t *testing.T) {
 func TestGetFlagVariables_MissingClusterFlag(t *testing.T) {
 	cmd := &cobra.Command{}
 	cmd.Flags().String("filename", "example.yaml", "")
-	cmd.Flags().Set("cluster", "") // Simulate missing cluster flag
+	_ = cmd.Flags().Set("cluster", "") // Simulate missing cluster flag
 	_, _, ok := getFlags(cmd)
 	assert.False(t, ok)
 }
@@ -28,7 +28,7 @@ func TestGetFlagVariables_MissingClusterFlag(t *testing.T) {
 func TestGetFlagVariables_MissingFilenameFlag(t *testing.T) {
 	cmd := &cobra.Command{}
 	cmd.Flags().String("cluster", "http://example.com:9200", "")
-	cmd.Flags().Set("filename", "") // Simulate missing filename flag
+	_ = cmd.Flags().Set("filename", "") // Simulate missing filename flag
 	_, _, ok := getFlags(cmd)
 	assert.False(t, ok)
 }
