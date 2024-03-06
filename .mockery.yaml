@@ -1,0 +1,18 @@
+quiet: False
+disable-version-string: True
+with-expecter: True
+mockname: "{{.InterfaceName}}"
+filename: "{{.MockName}}.go"
+outpkg: mocks
+packages:
+  github.com/Trendyol/es-alert-cli/pkg/client:
+      interfaces:
+        ElasticsearchAPIClientInterface:
+  github.com/Trendyol/es-alert-cli/pkg/reader:
+    interfaces:
+      FileReaderInterface:
+  github.com/Trendyol/es-alert-cli/internal:
+    interfaces:
+      MonitorServiceInterface:
+
+# Lots more config...

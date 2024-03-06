@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/labstack/gommon/log"
 
 	"github.com/spf13/cobra"
 )
@@ -14,7 +15,7 @@ var RootCmd = &cobra.Command{
 
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Errorf(err.Error())
 		os.Exit(1)
 	}
 }

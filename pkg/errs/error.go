@@ -1,10 +1,12 @@
 package errs
 
-import "fmt"
+import (
+	"github.com/labstack/gommon/log"
+)
 
-func HandleError(err error, message string) bool {
+func LogError(err error, message string) bool {
 	if err != nil {
-		fmt.Printf("%s: %v\n", message, err)
+		log.Errorf("%s: %v\n", message, err)
 		return true
 	}
 	return false

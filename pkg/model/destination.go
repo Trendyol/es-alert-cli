@@ -1,15 +1,15 @@
 package model
 
 type CustomWebhook struct {
-	Path         string            `json:"path,omitempty" yaml:",omitempty"`
 	HeaderParams map[string]string `json:"header_params,omitempty" yaml:",omitempty"`
-	Password     string            `json:"password,omitempty" yaml:",omitempty"`
-	Port         int               `json:"port,omitempty" yaml:",omitempty"`
-	Scheme       string            `json:"scheme,omitempty" yaml:",omitempty"`
 	QueryParams  map[string]string `json:"query_params,omitempty" yaml:",omitempty"`
+	Path         string            `json:"path,omitempty" yaml:",omitempty"`
+	Password     string            `json:"password,omitempty" yaml:",omitempty"`
+	Scheme       string            `json:"scheme,omitempty" yaml:",omitempty"`
 	Host         string            `json:"host,omitempty" yaml:",omitempty"`
 	URL          string            `json:"url,omitempty" yaml:",omitempty"`
 	Username     string            `json:"username,omitempty" yaml:",omitempty"`
+	Port         int               `json:"port,omitempty" yaml:",omitempty"`
 }
 
 type ElasticFetchResponse struct {
@@ -38,8 +38,8 @@ type Slack struct {
 
 type UpdateMonitorResponse struct {
 	ID          string  `json:"_id"`
+	Monitor     Monitor `json:"monitor"`
 	Version     int     `json:"_version"`
 	SeqNo       int     `json:"_seq_no"`
 	PrimaryTerm int     `json:"_primary_term"`
-	Monitor     Monitor `json:"monitor"`
 }
