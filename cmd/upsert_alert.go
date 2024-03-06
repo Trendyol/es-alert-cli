@@ -31,7 +31,7 @@ func upsertMonitors(cmd *cobra.Command, args []string) {
 
 	log.Info(fmt.Sprintf("Cli will connect to %s\n", cluster))
 
-	monitorService, err := internal.NewMonitorService(cluster)
+	monitorService, err := internal.NewMonitorService(cluster, nil)
 	if err != nil {
 		log.Info(fmt.Sprintf(", err: %s", err.Error()))
 		return

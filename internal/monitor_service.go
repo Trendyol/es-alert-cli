@@ -22,8 +22,8 @@ type MonitorServiceInterface interface {
 	Upsert(filename string, deleteUntracked bool) error
 }
 
-func NewMonitorService(cluster string) (*MonitorService, error) {
-	esAPIClient, err := client.NewElasticsearchAPI(cluster)
+func NewMonitorService(cluster string, auth *client.BasicAuth) (*MonitorService, error) {
+	esAPIClient, err := client.NewElasticsearchAPI(cluster, auth)
 	if errs.LogError(err, "Error creating Elasticsearch API client") {
 		return nil, err
 	}
