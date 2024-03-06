@@ -1,0 +1,46 @@
+version: '3'
+services:
+  opendistro:
+    image: amazon/opendistro-for-elasticsearch:1.13.3
+    container_name: opendistro
+    environment:
+      - cluster.name=opendistro-cluster
+      - node.name=opendistro
+      - discovery.seed_hosts=opendistro
+      - cluster.initial_master_nodes=opendistro
+      - opendistro_security.disabled=true
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      - odfe-data1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    networks:
+      - odfe-net
+  kibana:
+    image: amazon/opendistro-for-elasticsearch-kibana:latest
+    container_name: odfe-kibana
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      ELASTICSEARCH_URL: https://opendistro:9200
+      ELASTICSEARCH_HOSTS: https://opendistro:9200
+    networks:
+      - odfe-net
+
+volumes:
+  odfe-data1:
+  odfe-data2:
+
+networks:
+  odfe-net:

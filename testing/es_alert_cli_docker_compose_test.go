@@ -7,90 +7,96 @@ import (
 	"github.com/Trendyol/es-alert-cli/cmd"
 	"github.com/Trendyol/es-alert-cli/pkg/client"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/stretchr/testify/require"
+	tc "github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestEsAlertCli(t *testing.T) {
+	ctx := context.Background()
+	compose, err := tc.NewDockerCompose("docker-compose.yml")
+	require.NoError(t, err, "NewDockerComposeAPI()")
+	t.Cleanup(func() {
+		require.NoError(t, compose.Down(context.Background(), tc.RemoveOrphans(true), tc.RemoveImagesLocal), "compose.Down()")
+	})
 
-	tests := []struct {
-		version string
-	}{
-		{"7.15.0"},
-		{"8.9.0"},
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	err = compose.
+		WaitForService("opendistro", wait.ForLog("[opendistro] Node started")).
+		Up(ctx, tc.Wait(true))
+
+	esContainer, err := compose.ServiceContainer(ctx, "opendistro")
+	if err != nil {
+		println(err)
+	}
+	kibanaContainer, err := compose.ServiceContainer(ctx, "kibana")
+	if err != nil {
+		println(err)
 	}
 
-	for _, test := range tests {
-		t.Run(test.version, func(t *testing.T) {
-			//given
-			image := fmt.Sprintf("docker.elastic.co/elasticsearch/elasticsearch:%s", test.version)
-			ctx := context.Background()
-			elasticsearchContainerRequest := testcontainers.ContainerRequest{
-				Image:        image,
-				Name:         fmt.Sprintf("elasticsearch%s", test.version),
-				ExposedPorts: []string{"9200/tcp"},
-				Env: map[string]string{
-					"node.name":             "single-node",
-					"bootstrap.memory_lock": "true",
-					"cluster.name":          "testcontainers-go",
-					"discovery.type":        "single-node",
-					"ES_JAVA_OPTS":          "-Xms1g -Xmx1g",
-				},
-				WaitingFor: wait.ForLog("Cluster health status changed from [YELLOW] to [GREEN]"),
-			}
-
-			elasticsearchContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-				ContainerRequest: elasticsearchContainerRequest,
-				Started:          true,
-			})
-			if err != nil {
-				t.Errorf("Error creating the container: %s", err)
-			}
-			defer elasticsearchContainer.Terminate(ctx)
-			endpoint, err := elasticsearchContainer.Endpoint(ctx, "")
-			if err != nil {
-				t.Errorf("Error getting the Elasticsearch endpoint: %s", err)
-			}
-			endpoint = "http://" + endpoint
-			println(endpoint)
-
-			// Create a temporary YAML file for testing
-			tempFile := createTempYAMLFile(t)
-
-			// Ensure the temporary file is removed after the test
-			defer os.Remove(tempFile)
-
-			actual := new(bytes.Buffer)
-			cmd.RootCmd.SetOut(actual)
-			cmd.RootCmd.SetErr(actual)
-			cmd.RootCmd.SetArgs([]string{"upsert", "-c", endpoint, "-n", tempFile})
-
-			//when
-			err = cmd.RootCmd.Execute()
-			if err != nil {
-				println(err)
-			}
-
-			elasticClient, err := client.NewElasticsearchAPI(endpoint)
-			if err != nil {
-				t.Errorf("Error creating elastic client %s", err)
-			}
-
-			monitors, monitorSet, err := elasticClient.FetchMonitors()
-			if err != nil {
-				t.Errorf("Error fething monitors: %s", err)
-			}
-
-			//then
-			assert.Equal(t, actual.String(), len(monitors), "actual is not expected")
-			assert.Equal(t, actual.String(), len(monitorSet.String()), "actual is not expected")
-		})
+	elasticEndpoint, err := esContainer.Endpoint(ctx, "")
+	if err != nil {
+		t.Errorf("Error getting the Elasticsearch endpoint: %s", err)
 	}
+	elasticEndpoint = "http://" + elasticEndpoint
+
+	println(elasticEndpoint)
+	kibanaEndpoint, err := kibanaContainer.Endpoint(ctx, "")
+	if err != nil {
+		t.Errorf("Error getting the Kibana endpoint: %s", err)
+	}
+	kibanaEndpoint = "http://" + kibanaEndpoint
+	println(kibanaEndpoint)
+
+	elasticClient, err := client.NewElasticsearchAPI(elasticEndpoint, &client.BasicAuth{
+		Username: "admin",
+		Password: "admin",
+	})
+	createIndex(*elasticClient, t)
+
+	// Create a temporary YAML file for testing
+	tempFile := createTempYAMLFile(t)
+
+	// Ensure the temporary file is removed after the test
+	defer os.Remove(tempFile)
+
+	actual := new(bytes.Buffer)
+	cmd.RootCmd.SetOut(actual)
+	cmd.RootCmd.SetErr(actual)
+	cmd.RootCmd.SetArgs([]string{"upsert", "-c", elasticEndpoint, "-n", tempFile})
+
+	//when
+	err = cmd.RootCmd.Execute()
+	if err != nil {
+		println(err)
+	}
+	if err != nil {
+		t.Errorf("Error creating elastic client %s", err)
+	}
+
+	time.Sleep(5000)
+	monitors, monitorSet, err := elasticClient.FetchMonitors()
+	if err != nil {
+		t.Errorf("Error fething monitors: %s", err)
+	}
+	//then
+	assert.Equal(t, 1, len(monitors), "actual is not expected")
+	assert.Equal(t, 5, len(monitorSet.String()), "actual is not expected")
 }
 
-// Helper function to create a temporary YAML file for testing
+func createIndex(es client.ElasticsearchAPIClient, t *testing.T) {
+	res, err := es.Client.Put("/created-index", nil)
+	if err != nil {
+		println(fmt.Errorf("err while creating index: %s", err))
+	}
+	assert.Equal(t, res.StatusCode(), 200, "index not created")
+}
+
 func createTempYAMLFile(t *testing.T) string {
 	tmpfile, err := os.CreateTemp("", "test-*.yaml")
 	if err != nil {
@@ -117,7 +123,7 @@ func createMonitorYamlContent() string {
   inputs:
     - search:
         indices:
-          - 'test-index'
+          - 'created-index'
         query:
           query:
             bool:

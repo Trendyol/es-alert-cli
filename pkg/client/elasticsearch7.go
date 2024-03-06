@@ -9,11 +9,11 @@ import (
 )
 
 type ElasticsearchAPIClient struct {
-	client *BaseClient
+	Client *BaseClient
 }
 
-func NewElasticsearchAPI(client string) (*ElasticsearchAPIClient, error) {
-	return &ElasticsearchAPIClient{client: NewBaseClient(client)}, nil
+func NewElasticsearchAPI(client string, auth *BasicAuth) (*ElasticsearchAPIClient, error) {
+	return &ElasticsearchAPIClient{Client: NewBaseClient(client, auth)}, nil
 }
 
 type ElasticsearchQuery map[string]interface{}
@@ -29,12 +29,12 @@ func (es ElasticsearchAPIClient) FetchMonitors() (map[string]model.Monitor, maps
 
 	var response model.ElasticFetchResponse
 
-	res, err := es.client.Post("/_opendistro/_alerting/monitors/_search", alertQuery)
+	res, err := es.Client.Post("/_opendistro/_alerting/monitors/_search", alertQuery)
 	if err != nil {
 		return nil, nil, fmt.Errorf("err while getting monitor response: %s", err)
 	}
 
-	err = es.client.Bind(res.Body(), &response)
+	err = es.Client.Bind(res.Body(), &response)
 	if err != nil {
 		return nil, nil, fmt.Errorf("err while binding monitor response: %s", err)
 	}
@@ -67,12 +67,12 @@ func (es ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinati
 	var response model.ElasticFetchResponse
 
 	// Send the request to the Elasticsearch cluster
-	res, err := es.client.Post("/_opendistro/_alerting/monitors/_search", query)
+	res, err := es.Client.Post("/_opendistro/_alerting/monitors/_search", query)
 	if err != nil {
 		log.Fatal(fmt.Errorf("err while getting destination response: %s", err))
 	}
 
-	err = es.client.Bind(res.Body(), &response)
+	err = es.Client.Bind(res.Body(), &response)
 	if err != nil {
 		log.Fatal(fmt.Errorf("err while binding destination response: %s", err))
 	}
@@ -101,14 +101,14 @@ func (es ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]mode
 
 		// Send the request to the Elasticsearch cluster
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
-		res, err := es.client.Put(path, currentMonitor)
+		res, err := es.Client.Put(path, currentMonitor)
 		if err != nil {
 			log.Fatal(fmt.Errorf("err while updating monitor: %s", err))
 		}
 
 		// Bind the response
 		var monitorResponse model.UpdateMonitorResponse
-		err = es.client.Bind(res.Body(), &monitorResponse)
+		err = es.Client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
 			log.Fatal(fmt.Errorf("err while binding monitor update response, response: %s", err))
 		}
@@ -122,14 +122,14 @@ func (es ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]mode
 
 		// Send the request to the Elasticsearch cluster
 		path := fmt.Sprintf("/_opendistro/_alerting/monitors/%s", currentMonitor.ID)
-		res, err := es.client.Post(path, currentMonitor)
+		res, err := es.Client.Post(path, currentMonitor)
 		if err != nil {
 			log.Fatal(fmt.Errorf("err while posting to create monitor: %s", err))
 		}
 
 		// Bind the response
 		var monitorResponse model.UpdateMonitorResponse
-		err = es.client.Bind(res.Body(), &monitorResponse)
+		err = es.Client.Bind(res.Body(), &monitorResponse)
 		if err != nil {
 			log.Fatal(fmt.Errorf("err while binding create monitor response: %s", err))
 		}

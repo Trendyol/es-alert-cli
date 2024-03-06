@@ -32,7 +32,7 @@ func upsertAlerts(cmd *cobra.Command, args []string) {
 		return
 	}
 	fmt.Printf("Cli will connect to %s\n", cluster)
-	esAPIClient, err := client.NewElasticsearchAPI(cluster)
+	esAPIClient, err := client.NewElasticsearchAPI(cluster, nil)
 	if errs.HandleError(err, "Error creating Elasticsearch API client") {
 		return
 	}
