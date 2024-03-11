@@ -10,8 +10,8 @@ import (
 
 type BaseClient struct {
 	client      *fasthttp.Client
-	baseURL     string
 	AuthOptions *BasicAuth
+	baseURL     string
 }
 
 type BasicAuth struct {

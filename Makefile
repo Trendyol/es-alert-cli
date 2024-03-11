@@ -24,3 +24,6 @@ compose:
 
 docker-build:
 	docker build --progress=plain -t docker.io/trendyoltech/dcp .
+
+test-container:
+	go test ./... -tags=testing -count=1

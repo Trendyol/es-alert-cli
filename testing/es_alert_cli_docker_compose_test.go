@@ -1,22 +1,26 @@
+//go:build testing
+// +build testing
+
+//nolint:lll,funlen,ineffassign,staticcheck
 package testing
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/Trendyol/es-alert-cli/cmd"
 	"github.com/Trendyol/es-alert-cli/pkg/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tc "github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"os"
-	"testing"
-	"time"
 )
 
 func TestEsAlertCli(t *testing.T) {
-	ctx := context.Background()
 	compose, err := tc.NewDockerCompose("docker-compose.yml")
 	require.NoError(t, err, "NewDockerComposeAPI()")
 	t.Cleanup(func() {
@@ -70,7 +74,6 @@ func TestEsAlertCli(t *testing.T) {
 	cmd.RootCmd.SetErr(actual)
 	cmd.RootCmd.SetArgs([]string{"upsert", "-c", elasticEndpoint, "-n", tempFile})
 
-	//when
 	err = cmd.RootCmd.Execute()
 	if err != nil {
 		println(err)
@@ -84,7 +87,7 @@ func TestEsAlertCli(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error fething monitors: %s", err)
 	}
-	//then
+
 	assert.Equal(t, 1, len(monitors), "actual is not expected")
 	assert.Equal(t, 5, len(monitorSet.String()), "actual is not expected")
 }
