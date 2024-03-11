@@ -2,8 +2,6 @@ module github.com/Trendyol/es-alert-cli
 
 go 1.21
 
-toolchain go1.21.3
-
 require (
 	github.com/deckarep/golang-set v1.8.0
 	github.com/labstack/gommon v0.4.0
