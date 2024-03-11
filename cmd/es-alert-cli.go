@@ -35,8 +35,8 @@ var cliCmd = &cli{
 }
 
 func init() {
-	rootCmd.AddCommand(cliCmd.command)
-	rootCmd.AddCommand(cliCmd.helpCommand)
+	RootCmd.AddCommand(cliCmd.command)
+	RootCmd.AddCommand(cliCmd.helpCommand)
 	cliCmd.command.RunE = func(cmd *cobra.Command, args []string) error {
 		go func() {
 			log.Printf("Cli app running in this scope...")
