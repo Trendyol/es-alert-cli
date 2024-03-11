@@ -7,21 +7,18 @@ ES ALERT CLI is an open-source project that facilitates the management of Elasti
 To use this tool, follow the steps below:
 
 
-1. Install the necessary dependencies by running:
+1. Install the binary by running:
     ```bash
-    go get -u github.com/Trendyol/es-alert-cli  
+    curl -sL "https://github.com/Trendyol/es-alert-cli/releases/download/0.5.0/es-alert-cli" 
     ```
 
 
-2. Navigate to the project directory and build the CLI tool:
-    ```bash
-    go build -o es-alert-cli
-    ```
-
-3. Run the tool with the `-c` and `-n` flags, providing your cluster IP and monitoring file name:
+2. Run the tool with the `-c` and `-n` flags, providing your cluster IP and monitoring file name:
    ```bash
    ./es-alert-cli upsert -c <your_cluster_ip> -n <your_monitoring_file_name>
    ```
+#### NOTE
+If you have problems with permissions on your computer, you may need to give a permission such as `chmod +x` to the binary file. You can find something similar in the example directory.
 
 ## Command-Line Options
 

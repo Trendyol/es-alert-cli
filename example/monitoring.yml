@@ -1,4 +1,4 @@
-- name: <YOUR APP NAME>
+- name: <YOUR MONITOR NAME>
   type: "monitor"
   enabled: true
   schedule:
