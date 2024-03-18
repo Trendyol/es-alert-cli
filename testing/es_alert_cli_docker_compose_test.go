@@ -1,6 +1,3 @@
-//go:build testing
-// +build testing
-
 //nolint:lll,funlen,ineffassign,staticcheck
 package testing
 
