@@ -1,0 +1,2 @@
+QUERY,COUNT,MONITOR,ALERT,LEVEL,SEVERITY,EXCLUDE,CLUSTER,APPNAME,KIBANA_TRIGGER_NAME
+query-application-name,10,Your Custom Monitor,Your Alert Name,x.level,3,,dc1,your-app-name,your-kibana-trigger-name
