@@ -70,19 +70,17 @@ func (b *BaseClient) Put(url string, pv interface{}) (*fasthttp.Response, error)
 	if b.AuthOptions != nil {
 		req.Header.Set("Authorization", "Basic "+basicAuth(b.AuthOptions.Username, b.AuthOptions.Password))
 	}
-	if pv != nil {
-		body, err := json.Marshal(pv)
-		if err != nil {
-			return nil, err
-		}
-		req.SetBody(body)
-		req.Header.SetContentType("application/json")
+	body, err := json.Marshal(pv)
+	if err != nil {
+		return nil, err
 	}
+	req.SetBody(body)
+	req.Header.SetContentType("application/json")
 
 	if err := b.client.Do(req, res); err != nil {
 		return nil, err
 	}
-	err := getBody(res)
+	err = getBody(res)
 	if err != nil {
 		return nil, err
 	}

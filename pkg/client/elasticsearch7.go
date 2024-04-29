@@ -102,7 +102,7 @@ func (es *ElasticsearchAPIClient) FetchDestinations() (map[string]model.Destinat
 }
 
 func (es *ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
-	response := make([]model.UpdateMonitorResponse, len(preparedMonitors))
+	response := make([]model.UpdateMonitorResponse, 0, len(preparedMonitors))
 	for monitorName, currentMonitor := range preparedMonitors {
 		// Select monitor
 		log.Debug("Running monitor: ", monitorName)
@@ -126,7 +126,7 @@ func (es *ElasticsearchAPIClient) UpdateMonitors(preparedMonitors map[string]mod
 }
 
 func (es *ElasticsearchAPIClient) CreateMonitors(preparedMonitors map[string]model.Monitor) []model.UpdateMonitorResponse {
-	response := make([]model.UpdateMonitorResponse, len(preparedMonitors))
+	response := make([]model.UpdateMonitorResponse, 0, len(preparedMonitors))
 	for monitorName, currentMonitor := range preparedMonitors {
 		// Select monitor
 		log.Debug("Running monitor: ", monitorName)

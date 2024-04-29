@@ -5,92 +5,129 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
-	"testing"
-	"time"
-
 	"github.com/Trendyol/es-alert-cli/cmd"
 	"github.com/Trendyol/es-alert-cli/pkg/client"
+	"github.com/Trendyol/es-alert-cli/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tc "github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"os"
+	"testing"
+	"time"
 )
 
 func TestEsAlertCli(t *testing.T) {
-	compose, err := tc.NewDockerCompose("docker-compose.yml")
-	require.NoError(t, err, "NewDockerComposeAPI()")
-	t.Cleanup(func() {
-		require.NoError(t, compose.Down(context.Background(), tc.RemoveOrphans(true), tc.RemoveImagesLocal), "compose.Down()")
-	})
-
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-
-	err = compose.
-		WaitForService("opendistro", wait.ForLog("[opendistro] Node started")).
-		Up(ctx, tc.Wait(true))
-
-	esContainer, err := compose.ServiceContainer(ctx, "opendistro")
-	if err != nil {
-		println(err)
+	tests := []struct {
+		version  string
+		testName string
+	}{
+		{"1.13.2", "TestEsAlertCli_v1.13.2"},
+		{"1.13.1", "TestEsAlertCli_v1.13.1"},
+		{"1.13.0", "TestEsAlertCli_v1.13.0"},
+		{"1.12.0", "TestEsAlertCli_v1.12.0"},
+		{"1.11.0", "TestEsAlertCli_v1.11.0"},
+		{"1.10.1", "TestEsAlertCli_v1.10.0"},
+		{"1.9.0", "TestEsAlertCli_v1.9.0"},
+		{"1.8.0", "TestEsAlertCli_v1.8.0"},
+		{"1.7.0", "TestEsAlertCli_v1.7.0"},
+		{"1.6.0", "TestEsAlertCli_v1.6.0"},
+		{"1.4.0", "TestEsAlertCli_v1.4.0"},
+		{"1.3.0", "TestEsAlertCli_v1.3.0"},
+		{"1.2.1", "TestEsAlertCli_v1.2.1"},
+		{"1.2.0", "TestEsAlertCli_v1.2.0"},
+		{"1.1.0", "TestEsAlertCli_v1.1.0"},
+		{"1.0.1", "TestEsAlertCli_v1.0.1"},
+		{"1.0.0", "TestEsAlertCli_v1.0.0"},
+		{"0.10.0", "TestEsAlertCli_v0.11.0"},
+		{"0.9.0", "TestEsAlertCli_v0.9.0"},
+		{"0.8.0", "TestEsAlertCli_v0.8.0"},
+		{"0.7.1", "TestEsAlertCli_v0.7.1"},
+		{"0.7.0", "TestEsAlertCli_v0.7.0"},
 	}
-	kibanaContainer, err := compose.ServiceContainer(ctx, "kibana")
-	if err != nil {
-		println(err)
+	for _, test := range tests {
+		t.Run(test.testName, func(t *testing.T) {
+			compose, err := tc.NewDockerCompose("docker-compose.yml")
+			env := map[string]string{
+				"VERSION": test.version,
+			}
+
+			require.NoError(t, err, "NewDockerComposeAPI()")
+			t.Cleanup(func() {
+				require.NoError(t, compose.Down(context.Background(), tc.RemoveOrphans(true), tc.RemoveImagesLocal), "compose.Down()")
+			})
+
+			ctx, cancel := context.WithCancel(context.Background())
+			t.Cleanup(cancel)
+
+			err = compose.
+				WithEnv(env).
+				WaitForService("opendistro", wait.NewHTTPStrategy("/").WithPort("9200/tcp").WithStartupTimeout(60*time.Second)).
+				Up(ctx, tc.Wait(true))
+
+			esContainer, err := compose.ServiceContainer(ctx, "opendistro")
+			if err != nil {
+				println(err)
+			}
+			kibanaContainer, err := compose.ServiceContainer(ctx, "kibana")
+			if err != nil {
+				println(err)
+			}
+
+			elasticEndpoint, err := esContainer.Endpoint(ctx, "")
+			if err != nil {
+				t.Errorf("Error getting the Elasticsearch endpoint: %s", err)
+			}
+			elasticEndpoint = "http://" + elasticEndpoint
+
+			println(elasticEndpoint)
+			kibanaEndpoint, err := kibanaContainer.Endpoint(ctx, "")
+			if err != nil {
+				t.Errorf("Error getting the Kibana endpoint: %s", err)
+			}
+			kibanaEndpoint = "http://" + kibanaEndpoint
+			println(kibanaEndpoint)
+
+			elasticClient, err := client.NewElasticsearchAPI(elasticEndpoint, &client.BasicAuth{
+				Username: "admin",
+				Password: "admin",
+			})
+			createIndex(*elasticClient, t)
+
+			// Create a temporary YAML file for testing
+			tempFile := createTempYAMLFile(t)
+
+			// Ensure the temporary file is removed after the test
+			defer os.Remove(tempFile)
+
+			actual := new(bytes.Buffer)
+			cmd.RootCmd.SetOut(actual)
+			cmd.RootCmd.SetErr(actual)
+			cmd.RootCmd.SetArgs([]string{"upsert", "-c", elasticEndpoint, "-n", tempFile})
+
+			err = cmd.RootCmd.Execute()
+			if err != nil {
+				println(err)
+			}
+			if err != nil {
+				t.Errorf("Error creating elastic client %s", err)
+			}
+
+			time.Sleep(5000)
+			monitors, monitorSet, err := elasticClient.FetchMonitors()
+			if err != nil {
+				t.Errorf("Error fething monitors: %s", err)
+			}
+
+			assert.Equal(t, 1, len(monitors), "actual is not expected")
+			assert.Equal(t, 5, len(monitorSet.String()), "actual is not expected")
+		})
 	}
-
-	elasticEndpoint, err := esContainer.Endpoint(ctx, "")
-	if err != nil {
-		t.Errorf("Error getting the Elasticsearch endpoint: %s", err)
-	}
-	elasticEndpoint = "http://" + elasticEndpoint
-
-	println(elasticEndpoint)
-	kibanaEndpoint, err := kibanaContainer.Endpoint(ctx, "")
-	if err != nil {
-		t.Errorf("Error getting the Kibana endpoint: %s", err)
-	}
-	kibanaEndpoint = "http://" + kibanaEndpoint
-	println(kibanaEndpoint)
-
-	elasticClient, err := client.NewElasticsearchAPI(elasticEndpoint, &client.BasicAuth{
-		Username: "admin",
-		Password: "admin",
-	})
-	createIndex(*elasticClient, t)
-
-	// Create a temporary YAML file for testing
-	tempFile := createTempYAMLFile(t)
-
-	// Ensure the temporary file is removed after the test
-	defer os.Remove(tempFile)
-
-	actual := new(bytes.Buffer)
-	cmd.RootCmd.SetOut(actual)
-	cmd.RootCmd.SetErr(actual)
-	cmd.RootCmd.SetArgs([]string{"upsert", "-c", elasticEndpoint, "-n", tempFile})
-
-	err = cmd.RootCmd.Execute()
-	if err != nil {
-		println(err)
-	}
-	if err != nil {
-		t.Errorf("Error creating elastic client %s", err)
-	}
-
-	time.Sleep(5000)
-	monitors, monitorSet, err := elasticClient.FetchMonitors()
-	if err != nil {
-		t.Errorf("Error fething monitors: %s", err)
-	}
-
-	assert.Equal(t, 1, len(monitors), "actual is not expected")
-	assert.Equal(t, 5, len(monitorSet.String()), "actual is not expected")
 }
 
 func createIndex(es client.ElasticsearchAPIClient, t *testing.T) {
-	res, err := es.Client.Put("/created-index", nil)
+	preparedMonitors := make(map[string]model.Monitor)
+	res, err := es.Client.Put("/created-index", preparedMonitors)
 	if err != nil {
 		println(fmt.Errorf("err while creating index: %s", err))
 	}
